@@ -1,4 +1,4 @@
-const configVariables = {
+const config = {
      appwriteUrl: String(import.meta.env.VITE_APPWRITE_URL),
      appwriteProjectId: String(import.meta.env.VITE_PROJECT_ID),
      appwriteDatabaseId: String(import.meta.env.VITE_DATABASE_ID),
@@ -7,4 +7,4 @@ const configVariables = {
 
 }
 
-export default configVariables
+export default config

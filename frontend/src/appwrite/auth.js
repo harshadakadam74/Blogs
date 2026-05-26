@@ -1,4 +1,4 @@
-import ConfigVariables from "../ConfigVariables/Config";
+import config from "../config/Config";
 import { Client, Account, ID } from "appwrite";
 
 export class AuthService {
@@ -7,8 +7,8 @@ export class AuthService {
 
     constructor(){
         this.client
-            .setEndpoint("https://fra.cloud.appwrite.io/v1");
-            .setProject("6a1475430000f5775276");
+            .setEndpoint(config.appwriteUrl);
+            .setProject(config.appwriteProjectId);
         this.account = new Account(this.client);
     }
 
