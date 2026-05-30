@@ -13,7 +13,16 @@ const AuthLayout = ({
 
   const [loader, setLoader] = useState(true);
 
+    
+
   useEffect(() => {
+    // if (authentication && authStatus !== authentication) {
+    //         navigate("/login")
+    //     }else if(!authentication && authStatus !== authentication){
+    //         navigate("/")
+    //     }
+    //     setLoader(false)
+    // }, [authStatus, navigate, authentication])
     if (authentication && !authStatus) {
       navigate("/login");
     } else if (!authentication && authStatus) {
