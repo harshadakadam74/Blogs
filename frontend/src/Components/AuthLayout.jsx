@@ -2,18 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-const AuthLayout = ({
-  children,
-  authentication = true,
-}) => {
+const AuthLayout = ({ children, authentication = true }) => {
   const navigate = useNavigate();
-  const authStatus = useSelector(
-    (state) => state.auth.status
-  );
+  const authStatus = useSelector((state) => state.auth.status);
 
   const [loader, setLoader] = useState(true);
-
-    
 
   useEffect(() => {
     // if (authentication && authStatus !== authentication) {
@@ -29,7 +22,11 @@ const AuthLayout = ({
       navigate("/");
     }
 
-    setLoader(false);
+    const timer = setTimeout(() => {
+      setLoader(false);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [authStatus, authentication, navigate]);
 
   if (loader) {
@@ -48,9 +45,7 @@ const AuthLayout = ({
             "
           ></div>
 
-          <p className="mt-4 text-green-700 font-medium">
-            Loading...
-          </p>
+          <p className="mt-4 text-green-700 font-medium">Loading...</p>
         </div>
       </div>
     );

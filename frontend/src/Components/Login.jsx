@@ -13,26 +13,26 @@ const Login = () => {
   const { register, handleSubmit } = useForm();
   const [error, setError] = useState("");
 
-  const login = async (data) => {
-    setError("");
+ const login = async (data) => {
+  console.log("FORM DATA:", data);
+  setError("");
 
-    try {
-      const session = await authService.login(data);
+  try {
+    const session = await authService.login(data.email, data.password);
 
-      if (session) {
-        const userData = await authService.getCurrentUser();
+    if (session) {
+      const userData = await authService.getCurrentUser();
 
-        if (userData) {
-          dispatch(authLogin(userData));
-        }
-
-        navigate("/");
+      if (userData) {
+        dispatch(authLogin(userData));
       }
-    } catch (error) {
-      setError(error.message);
-    }
-  };
 
+      navigate("/");
+    }
+  } catch (err) {
+    setError(err.message);
+  }
+};
   return (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 px-4 py-8">
     <div
@@ -97,15 +97,15 @@ const Login = () => {
           })}
         />
 
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          {...register("password", {
-            required: "Password is required",
-          })}
-        />
-
+       <Input
+  label="Password"
+  type="password"
+  placeholder="Enter your password"
+  autoComplete="current-password"
+  {...register("password", {
+    required: "Password is required",
+  })}
+/>
         <Button
           type="submit"
           className="

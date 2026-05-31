@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
+import { Outlet } from "react-router-dom";
+
 import authService from "./appwrite/auth";
 
 import { login, logout } from "./Store/authSlice";
@@ -41,8 +43,9 @@ const App = () => {
         <>
             <Header />
 
-            <main>
+            <main className="min-h-screen">
                 {/* App Content */}
+                <Outlet />
             </main>
 
             <Footer />

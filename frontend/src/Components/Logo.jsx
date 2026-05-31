@@ -1,13 +1,13 @@
 import React from "react";
 
-function Logo({ width = "12px" }) {
+function Logo({ width = "" }) {
   return (
     <div
       className="flex items-center gap-3 group"
       style={{ width }}
     >
-      {/* Logo Icon */}
-      <div
+     {/* Logo Icon */}
+  <div
     className="
       w-12 h-12
       rounded-full
@@ -39,7 +39,18 @@ function Logo({ width = "12px" }) {
   Script<span className="text-green-700">ora</span>
 </h1>
 
- 
+    <p
+      className="
+        hidden sm:block
+        text-xs
+        font-medium
+        tracking-widest
+        uppercase
+        text-gray-500
+      "
+    >
+      Share Your Story
+    </p>
   </div>
     </div>
   );

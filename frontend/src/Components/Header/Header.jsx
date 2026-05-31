@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Logo, LogoutBtn } from "../index";
+import { Container, LogoutBtn } from "../index";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -72,7 +72,7 @@ function Header() {
     text-4xl
     font-black
     tracking-tight
-    text-gray-900
+    text-yellow-600
   "
 >
   Script<span className="text-green-700">ora</span>
