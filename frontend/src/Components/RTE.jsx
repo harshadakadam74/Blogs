@@ -2,16 +2,16 @@ import React from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import { Controller } from "react-hook-form";
 
-const RTE = ({
+export default function RTE({
   name,
   control,
   label,
   defaultValue = "",
-}) => {
+}) {
   return (
     <div className="w-full">
       {label && (
-        <label className="block mb-2 text-sm font-medium text-gray-700">
+        <label className="inline-block mb-1 pl-1">
           {label}
         </label>
       )}
@@ -19,15 +19,13 @@ const RTE = ({
       <Controller
         name={name || "content"}
         control={control}
-        defaultValue={defaultValue}
-        render={({ field: { onChange, value } }) => (
+        render={({ field: { onChange } }) => (
           <Editor
-            apiKey="YOUR_TINYMCE_API_KEY"
-            value={value}
+            apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+            initialValue={defaultValue}
             init={{
               height: 500,
               menubar: true,
-
               plugins: [
                 "advlist",
                 "autolink",
@@ -36,27 +34,21 @@ const RTE = ({
                 "image",
                 "charmap",
                 "preview",
+                "anchor",
                 "searchreplace",
                 "visualblocks",
                 "code",
                 "fullscreen",
+                "insertdatetime",
+                "media",
+                "table",
+                "help",
+                "wordcount",
               ],
-
               toolbar:
-                "undo redo | formatselect | " +
-                "bold italic underline | " +
-                "alignleft aligncenter alignright alignjustify | " +
-                "bullist numlist outdent indent | " +
-                "link image | preview code fullscreen",
-
-              content_style: `
-                body {
-                  font-family: Inter, Arial, sans-serif;
-                  font-size: 16px;
-                  line-height: 1.6;
-                  padding: 10px;
-                }
-              `,
+                "undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image | removeformat | help",
+              content_style:
+                "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
             }}
             onEditorChange={onChange}
           />
@@ -64,6 +56,4 @@ const RTE = ({
       />
     </div>
   );
-};
-
-export default RTE;
+}
