@@ -1,6 +1,6 @@
 import React from "react";
 
-function Logo({ width = "" }) {
+function Logo({ width = "auto" }) {
   return (
     <div
       className="flex items-center gap-3 group"

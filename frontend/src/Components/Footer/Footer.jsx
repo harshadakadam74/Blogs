@@ -11,6 +11,7 @@ function Footer() {
         pt-24
         sm:pt-28
         pb-10
+      
 
         bg-gradient-to-br
         from-[#d9e8c6]
@@ -51,7 +52,7 @@ function Footer() {
   </div>
 
       {/* Main Container */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4">
+      <div className="relative z-10 mx-auto max-w-7xl ml-2 px-4">
         <div
           className="
             grid
@@ -73,7 +74,7 @@ function Footer() {
                 cursor-pointer
               "
             >
-              <Logo width="100px" />
+              <Logo />
             </div>
 
             <p
@@ -335,6 +336,7 @@ function Footer() {
           className="
             mt-16
             pt-6
+            mr-6
             border-t
             border-gray-400/50
 
@@ -357,7 +359,7 @@ function Footer() {
             © 2026 DevUI. All Rights Reserved.
           </p>
 
-          <div className="flex gap-6 text-sm">
+          <div className="flex gap-6 text-sm ">
             <Link
               to="/"
               className="

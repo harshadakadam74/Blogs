@@ -21,18 +21,28 @@ const PostCard = ({ $id, title, featuredImage }) => {
       >
         {/* Image */}
         <div className="overflow-hidden">
-          <img
-            src={appwriteService.getFilePreview(featuredImage)}
-            alt={title}
-            className="
-              w-full
-              h-56
-              object-cover
-              hover:scale-110
-              transition-transform
-              duration-500
-            "
-          />
+      <img
+  src={
+    featuredImage
+      ? appwriteService
+          .getFilePreview(featuredImage)
+          .toString()
+      : "/placeholder.jpg"
+  }
+  alt={title}
+  className="
+    w-full
+    h-56
+    object-cover
+    hover:scale-110
+    transition-transform
+    duration-500
+  "
+  onError={(e) => {
+    e.target.src = "/placeholder.jpg";
+  }}
+
+/>
         </div>
 
         {/* Content */}

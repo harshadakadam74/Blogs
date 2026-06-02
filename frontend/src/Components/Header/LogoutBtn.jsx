@@ -18,13 +18,14 @@ const LogoutBtn = () => {
                 onClick={logoutHandler}
                 className="
                     px-5
-                    py-2
+                    py-2.5
+                    mr-6
                     rounded-xl
-                    bg-red-500
+                    bg-red-600
                     text-white
                     font-semibold
                     shadow-md
-                    hover:bg-red-600
+                    hover:bg-red-700
                     hover:scale-105
                     active:scale-95
                     transition-all

@@ -74,22 +74,30 @@ const Post = () => {
 
           {/* Cover Image */}
           <div className="relative overflow-hidden rounded-3xl shadow-xl">
-            <img
-              src={appwriteService.getFilePreview(
-                post.featuredImage
-              )}
-              alt={post.title}
-              className="
-                w-full
-                h-64
-                sm:h-80
-                md:h-[500px]
-                object-cover
-                hover:scale-105
-                transition-transform
-                duration-700
-              "
-            />
+           <img
+  src={
+    post.featuredImage
+      ? appwriteService
+          .getFilePreview(post.featuredImage)
+          .toString()
+      : "/placeholder.jpg"
+  }
+  alt={post.title}
+  loading="lazy"
+  className="
+    w-full
+    h-64
+    sm:h-80
+    md:h-[500px]
+    object-cover
+    rounded-3xl
+    shadow-2xl
+    transition-all
+    duration-700
+    hover:scale-105
+    hover:shadow-emerald-200
+  "
+/>
 
             <div className="absolute inset-0 bg-black/20"></div>
 
