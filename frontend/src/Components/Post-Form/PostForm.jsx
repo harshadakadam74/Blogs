@@ -87,25 +87,10 @@ const PostForm = ({ post }) => {
     <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 py-5">
       <form
         onSubmit={handleSubmit(submit)}
-        className="
-    flex
-    flex-col
-    lg:flex-row
-    gap-5
-  "
+        className="flex flex-col lg:flex-row gap-5"
       >
         {/* Left Side */}
-        <div
-          className="
-      w-full
-      lg:w-2/3
-      bg-white
-      rounded-2xl
-      shadow-lg
-      p-4
-      sm:p-6
-    "
-        >
+        <div className="w-full lg:w-2/3 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
           <Input
             label="Title"
             placeholder="Enter Post Title"
@@ -134,18 +119,7 @@ const PostForm = ({ post }) => {
         </div>
 
         {/* Right Side */}
-        <div
-          className="
-      w-full
-      lg:w-1/3
-      bg-white
-      rounded-2xl
-      shadow-lg
-      p-4
-      sm:p-6
-      h-fit
-    "
-        >
+        <div className="w-full lg:w-1/3 bg-white rounded-2xl shadow-lg p-4 sm:p-6 h-fit">
           <Input
             label="Featured Image"
             type="file"
@@ -161,14 +135,7 @@ const PostForm = ({ post }) => {
               <img
                 src={appwriteService.getFilePreview(post.featuredImage)}
                 alt={post.title}
-                className="
-            w-full
-            h-44
-            sm:h-56
-            object-cover
-            rounded-xl
-            shadow-md
-          "
+                className="w-full h-44 sm:h-56 object-cover rounded-xl shadow-md"
               />
             </div>
           )}
@@ -185,141 +152,26 @@ const PostForm = ({ post }) => {
           <Button
             type="submit"
             className="
-        w-full
-        py-3
-        rounded-xl
-        bg-gradient-to-r
-        from-green-500
-        to-emerald-600
-        text-white
-        font-semibold
-        shadow-md
-        hover:shadow-lg
-        hover:scale-[1.02]
-        transition-all
-        duration-300
-      "
+              w-full
+              py-3
+             rounded-xl
+             bg-gradient-to-r
+             from-green-500
+             to-emerald-600
+             text-white
+             font-semibold
+             text-lg
+             shadow-lg
+             hover:from-green-600
+             hover:to-emerald-700
+             hover:shadow-xl
+             transform
+             hover:-translate-y-1
+             transition-all
+             duration-300
+             "
           >
-            {post ? "Update Post" : "Publish Post"}
-          </Button>
-        </div>
-      </form>
-      <form
-        onSubmit={handleSubmit(submit)}
-        className="
-    flex
-    flex-col
-    lg:flex-row
-    gap-5
-  "
-      >
-        {/* Left Side */}
-        <div
-          className="
-      w-full
-      lg:w-2/3
-      bg-white
-      rounded-2xl
-      shadow-lg
-      p-4
-      sm:p-6
-    "
-        >
-          <Input
-            label="Title"
-            placeholder="Enter Post Title"
-            className="mb-4"
-            {...register("title", { required: true })}
-          />
-
-          <Input
-            label="Slug"
-            placeholder="Enter Post Slug"
-            className="mb-4"
-            {...register("slug", { required: true })}
-            onInput={(e) =>
-              setValue("slug", slugTransform(e.currentTarget.value), {
-                shouldValidate: true,
-              })
-            }
-          />
-
-          <RTE
-            label="Content"
-            name="content"
-            control={control}
-            defaultValue={getValues("content")}
-          />
-        </div>
-
-        {/* Right Side */}
-        <div
-          className="
-      w-full
-      lg:w-1/3
-      bg-white
-      rounded-2xl
-      shadow-lg
-      p-4
-      sm:p-6
-      h-fit
-    "
-        >
-          <Input
-            label="Featured Image"
-            type="file"
-            accept="image/png, image/jpg, image/jpeg, image/webp"
-            className="mb-4"
-            {...register("image", {
-              required: !post,
-            })}
-          />
-
-          {post && (
-            <div className="mb-4">
-              <img
-                src={appwriteService.getFilePreview(post.featuredImage)}
-                alt={post.title}
-                className="
-            w-full
-            h-44
-            sm:h-56
-            object-cover
-            rounded-xl
-            shadow-md
-          "
-              />
-            </div>
-          )}
-
-          <Select
-            options={["active", "inactive"]}
-            label="Status"
-            className="mb-4"
-            {...register("status", {
-              required: true,
-            })}
-          />
-
-          <Button
-            type="submit"
-            className="
-        w-full
-        py-3
-        rounded-xl
-        bg-gradient-to-r
-        from-green-500
-        to-emerald-600
-        text-white
-        font-semibold
-        shadow-md
-        hover:shadow-lg
-        hover:scale-[1.02]
-        transition-all
-        duration-300
-      "
-          >
-            {post ? "Update Post" : "Publish Post"}
+            {post ? "✏️ Update Post" : "🚀 Publish Post"}
           </Button>
         </div>
       </form>

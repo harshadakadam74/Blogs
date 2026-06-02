@@ -4,50 +4,59 @@ import { Client, Account, ID } from "appwrite";
 export class AuthService {
     client = new Client();
     account;
+    
 
-    constructor() {
-        this.client
-            .setEndpoint(configVariables.appwriteUrl)
-            .setProject(configVariables.appwriteProjectId);
+   constructor() {
+    console.log("Project ID:", configVariables.appwriteProjectId);
+    console.log("Endpoint:", configVariables.appwriteUrl);
 
-        this.account = new Account(this.client);
-    }
+    this.client
+        .setEndpoint(configVariables.appwriteUrl)
+        .setProject(configVariables.appwriteProjectId);
 
-    // Create Account
-    async createAccount({ email, password, name }) {
-        try {
-            const userAccount = await this.account.create(
-                ID.unique(),
-                email,
-                password,
-                name
-            );
+    this.account = new Account(this.client);
+}
 
-            if (userAccount) {
-                // Auto login after signup
-                return await this.login({ email, password });
-            }
+   // Create Account
+async createAccount({ email, password, name }) {
+    try {
+        const userAccount = await this.account.create(
+            ID.unique(),
+            email,
+            password,
+            name
+        );
 
-            return userAccount;
+        if (userAccount) {
+            try {
+                await this.account.deleteSessions();
+            } catch (e) {}
 
-        } catch (error) {
-            console.log("Appwrite createAccount error:", error);
-            throw error;
+            return await this.login({ email, password });
         }
+
+        return userAccount;
+    } catch (error) {
+        console.log("Appwrite createAccount error:", error);
+        throw error;
     }
+}
 
     // Login User
-    async login({ email, password }) {
-        try {
-            return await this.account.createEmailPasswordSession(
-                email,
-                password
-            );
-        } catch (error) {
-            console.log("Appwrite login error:", error);
-            throw error;
-        }
+   async login({ email, password }) {
+    console.log("Email:", email);
+    console.log("Password:", password);
+
+    try {
+        return await this.account.createEmailPasswordSession(
+            email,
+            password
+        );
+    } catch (error) {
+        console.log("Appwrite login error:", error);
+        throw error;
     }
+}
 
     // Get Current User
     async getCurrentUser() {
