@@ -7,18 +7,18 @@ import { useSelector } from "react-redux";
 
 const Post = () => {
   const [post, setPost] = useState(null);
+  const [likes, setLikes] = useState(0);
+  const [liked, setLiked] = useState(false);
+
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
 
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  const userData = useSelector(
-    (state) => state.auth.userData
-  );
+  const userData = useSelector((state) => state.auth.userData);
 
-  const isAuthor =
-    post && userData
-      ? post.userId === userData.$id
-      : false;
+  const isAuthor = post && userData ? post.userId === userData.$id : false;
 
   useEffect(() => {
     if (slug) {
@@ -36,22 +36,107 @@ const Post = () => {
 
   const deletePost = async () => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this post?"
+      "Are you sure you want to delete this post?",
     );
 
     if (!confirmDelete) return;
 
-    const status = await appwriteService.deletePost(
-      post.$id
-    );
+    const status = await appwriteService.deletePost(post.$id);
 
     if (status) {
-      await appwriteService.deleteFile(
-        post.featuredImage
-      );
+      await appwriteService.deleteFile(post.featuredImage);
       navigate("/");
     }
   };
+
+  useEffect(() => {
+  if (post && userData) {
+    loadLikes();
+  }
+}, [post, userData]);
+
+const loadLikes = async () => {
+  const likesData =
+    await appwriteService.getPostLikes(post.$id);
+
+  setLikes(likesData.documents.length);
+
+  const userLike =
+    await appwriteService.getUserLike(
+      post.$id,
+      userData.$id
+    );
+
+  if (userLike.documents.length > 0) {
+    setLiked(true);
+  }
+};
+
+ const handleLike = async () => {
+  if (!userData) return;
+
+  if (!liked) {
+    await appwriteService.addLike(
+      post.$id,
+      userData.$id
+    );
+
+    setLiked(true);
+    setLikes((prev) => prev + 1);
+
+  } else {
+    const userLike =
+      await appwriteService.getUserLike(
+        post.$id,
+        userData.$id
+      );
+
+    if (userLike.documents.length > 0) {
+      await appwriteService.removeLike(
+        userLike.documents[0].$id
+      );
+    }
+
+    setLiked(false);
+    setLikes((prev) => prev - 1);
+  }
+};
+
+useEffect(() => {
+  if (post) {
+    loadComments();
+  }
+}, [post]);
+
+const loadComments = async () => {
+  const data =
+    await appwriteService.getComments(post.$id);
+
+  if (data) {
+    setComments(data.documents);
+  }
+};
+
+  const handleComment = async () => {
+  if (!comment.trim()) return;
+
+  const newComment =
+    await appwriteService.addComment({
+      postId: post.$id,
+      userId: userData.$id,
+      authorName: userData.name,
+      comment,
+    });
+
+  if (newComment) {
+    setComments((prev) => [
+      ...prev,
+      newComment,
+    ]);
+
+    setComment("");
+  }
+};
 
   if (!post) {
     return (
@@ -59,9 +144,7 @@ const Post = () => {
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
 
-          <p className="mt-4 text-gray-600">
-            Loading post...
-          </p>
+          <p className="mt-4 text-gray-600">Loading post...</p>
         </div>
       </div>
     );
@@ -71,42 +154,61 @@ const Post = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-100 py-6 md:py-10">
       <Container>
         <div className="max-w-5xl mx-auto">
-
           {/* Cover Image */}
           <div className="relative overflow-hidden rounded-3xl shadow-xl">
-           <img
-  src={
-    post.featuredImage
-      ? appwriteService
-          .getFilePreview(post.featuredImage)
-          .toString()
-      : "/placeholder.jpg"
-  }
-  alt={post.title}
-  loading="lazy"
-  className="
-    w-full
-    h-64
-    sm:h-80
-    md:h-[500px]
-    object-cover
-    rounded-3xl
-    shadow-2xl
-    transition-all
-    duration-700
-    hover:scale-105
-    hover:shadow-emerald-200
-  "
-/>
+            <img
+              src={
+                post.featuredImage
+                  ? appwriteService
+                      .getFilePreview(post.featuredImage)
+                      .toString()
+                  : "/placeholder.jpg"
+              }
+              alt={post.title}
+              loading="lazy"
+              className="
+      w-full
+      h-64
+      sm:h-80
+      md:h-[500px]
+      object-cover
+      rounded-3xl
+      shadow-2xl
+      transition-all
+      duration-700
+      hover:scale-105
+      hover:shadow-emerald-200
+    "
+            />
 
             <div className="absolute inset-0 bg-black/20"></div>
 
+ <button
+    onClick={handleLike}
+    className="absolute top-3 right-3 z-10"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill={liked ? "red" : "white"}
+      stroke={liked ? "red" : "#555"}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="drop-shadow-md hover:scale-110 transition"
+    >
+      <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+    </svg>
+  </button>
+
             {/* Edit/Delete Buttons */}
             {isAuthor && (
-              <div className="absolute top-4 right-4 flex gap-2">
+              <div className="absolute top-4 right-4 flex gap-2 z-20">
                 <Link to={`/edit-post/${post.$id}`}>
                   <Button className="bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2">
-                    ✏️ Edit
+                    Edit
                   </Button>
                 </Link>
 
@@ -114,7 +216,7 @@ const Post = () => {
                   onClick={deletePost}
                   className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-4 py-2"
                 >
-                  🗑 Delete
+                  Delete
                 </Button>
               </div>
             )}
@@ -137,6 +239,71 @@ const Post = () => {
               md:mx-6
             "
           >
+            {/* Content */}
+            <div
+              className="
+    prose
+    prose-sm
+    sm:prose
+    lg:prose-lg
+    max-w-none
+    prose-headings:text-gray-800
+    prose-p:text-gray-700
+    prose-img:rounded-xl
+  "
+            >
+              {parse(post.content)}
+            </div>
+
+            {/* Comment Section */}
+            <div className="mt-10 border-t pt-8">
+              <h2 className="text-2xl font-bold mb-4">
+                Comments ({comments.length})
+              </h2>
+
+              <div className="flex flex-col gap-3">
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  rows="3"
+                />
+
+                <button
+                  onClick={handleComment}
+                  className="self-start bg-emerald-600 text-white px-5 py-2 rounded-xl hover:bg-emerald-700 transition"
+                >
+                  Add Comment
+                </button>
+              </div>
+
+              <div className="mt-6 space-y-4">
+               {comments.map((item) => (
+  <div
+    key={item.$id}
+    className="bg-gray-50 border border-gray-200 rounded-xl p-4"
+  >
+    <div className="flex justify-between">
+      <h4 className="font-semibold text-gray-800">
+        {item.authorName}
+      </h4>
+
+      <span className="text-xs text-gray-500">
+        {new Date(
+          item.createdAt
+        ).toLocaleDateString()}
+      </span>
+    </div>
+
+    <p className="text-gray-600 mt-2">
+      {item.comment}
+    </p>
+  </div>
+))}
+              </div>
+            </div>
+
             {/* Badge */}
             <div className="flex flex-wrap items-center gap-3 mb-5">
               <span className="px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
@@ -181,13 +348,9 @@ const Post = () => {
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-800">
-                  Author
-                </h3>
+                <h3 className="font-semibold text-gray-800">Author</h3>
 
-                <p className="text-sm text-gray-500">
-                  Published on Scriptora
-                </p>
+                <p className="text-sm text-gray-500">Published on Scriptora</p>
               </div>
             </div>
 

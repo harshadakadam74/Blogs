@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
 
 const PostCard = ({ $id, title, featuredImage }) => {
+
+
+
   return (
     <Link to={`/post/${$id}`}>
       <div
@@ -20,30 +23,29 @@ const PostCard = ({ $id, title, featuredImage }) => {
         "
       >
         {/* Image */}
-        <div className="overflow-hidden">
-      <img
-  src={
-    featuredImage
-      ? appwriteService
-          .getFilePreview(featuredImage)
-          .toString()
-      : "/placeholder.jpg"
-  }
-  alt={title}
-  className="
-    w-full
-    h-56
-    object-cover
-    hover:scale-110
-    transition-transform
-    duration-500
-  "
-  onError={(e) => {
-    e.target.src = "/placeholder.jpg";
-  }}
+      <div className="relative overflow-hidden">
+  <img
+    src={
+      featuredImage
+        ? appwriteService.getFilePreview(featuredImage).toString()
+        : "/placeholder.jpg"
+    }
+    alt={title}
+    className="
+      w-full
+      h-56
+      object-cover
+      hover:scale-110
+      transition-transform
+      duration-500
+    "
+    onError={(e) => {
+      e.target.src = "/placeholder.jpg";
+    }}
+  />
 
-/>
-        </div>
+  
+</div>
 
         {/* Content */}
         <div className="p-5">

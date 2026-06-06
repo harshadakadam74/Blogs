@@ -11,6 +11,7 @@ export class Service {
             .setEndpoint(configVariables.appwriteUrl)
             .setProject(configVariables.appwriteProjectId);
 
+
         // Database service
         this.databases = new Databases(this.client);
 
@@ -132,22 +133,21 @@ export class Service {
         }
     }
 
-    // Upload File
-    async uploadFile(file) {
-    try {
-        return await this.bucket.createFile(
-            configVariables.appwriteBucketId,
-            ID.unique(),
-            file
-        );
-    } catch (error) {
-        console.log(
-            "Appwrite service :: uploadFile :: error",
-            error
-        );
+async uploadFile(file) {
+  try {
+    return await this.bucket.createFile(
+      configVariables.appwriteBucketId,
+      ID.unique(),
+      file
+    );
+  } catch (error) {
+    console.log(
+      "Appwrite service :: uploadFile :: error",
+      error
+    );
 
-        return false;
-    }
+    return false;
+  }
 }
 
     // Delete File
@@ -177,6 +177,142 @@ export class Service {
         fileId
     );
 }
+
+// Get File Download Link
+async addLike(postId, userId) {
+  try {
+    return await this.databases.createDocument(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteLikesCollectionId,
+      ID.unique(),
+      {
+        postId,
+        userId,
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Remove Like
+async removeLike(documentId) {
+  try {
+    await this.databases.deleteDocument(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteLikesCollectionId,
+      documentId
+    );
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+// Get Likes for a Post
+async getPostLikes(postId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteLikesCollectionId,
+      [
+        Query.equal("postId", postId)
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Get User Like for a Post
+async getUserLike(postId, userId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteLikesCollectionId,
+      [
+        Query.equal("postId", postId),
+        Query.equal("userId", userId)
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+} 
+
+// Add Comment
+async addComment({
+  postId,
+  userId,
+  authorName,
+  comment,
+}) {
+  try {
+    return await this.databases.createDocument(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteCommentsCollectionId,
+      ID.unique(),
+      {
+        postId,
+        userId,
+        autherName: authorName,
+        comment,
+        createdAt: new Date().toISOString(),
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Get Comments for a Post
+
+async getComments(postId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteCommentsCollectionId,
+      [
+        Query.equal("postId", postId)
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Get Posts by User
+async getPostsByUser(userId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteCollectionId,
+      [
+        Query.equal("userId", userId)
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Get User Likes
+async getUserLikes(userId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteLikesCollectionId,
+      [
+        Query.equal("userId", userId)
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+   
 }
 
 const service = new Service();

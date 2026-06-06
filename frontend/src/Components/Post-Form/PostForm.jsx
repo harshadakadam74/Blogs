@@ -171,7 +171,7 @@ const PostForm = ({ post }) => {
              duration-300
              "
           >
-            {post ? "✏️ Update Post" : "🚀 Publish Post"}
+            {post ? " Update Post" : " Publish Post"}
           </Button>
         </div>
       </form>
