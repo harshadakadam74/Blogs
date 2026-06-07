@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Container } from "../Components";
 import appwriteService from "../appwrite/config";
@@ -8,43 +9,71 @@ function Profile() {
     (state) => state.auth.userData
   );
 
+  const [activeTab, setActiveTab] = useState("posts");
   const [totalPosts, setTotalPosts] = useState(0);
   const [likedPosts, setLikedPosts] = useState(0);
   const [myPosts, setMyPosts] = useState([]);
+  const [likedPostItems, setLikedPostItems] = useState([]);
 
   useEffect(() => {
-    if (userData) {
-      loadProfileData();
-    }
+    if (!userData) return;
+
+    let isMounted = true;
+
+    const fetchProfileData = async () => {
+      try {
+        const posts =
+          await appwriteService.getPostsByUser(
+            userData.$id
+          );
+
+        if (!isMounted) return;
+        setTotalPosts(posts?.documents?.length ?? 0);
+        setMyPosts(posts?.documents ?? []);
+
+        const likes =
+          await appwriteService.getUserLikes(
+            userData.$id
+          );
+
+        if (!isMounted) return;
+        setLikedPosts(likes?.documents?.length ?? 0);
+
+        const likedPostIds = likes?.documents
+          ?.map((like) => like.postId)
+          .filter(Boolean) ?? [];
+
+        const likedDetails = await Promise.all(
+          likedPostIds.map(async (postId) => {
+            try {
+              return await appwriteService.getPost(postId);
+            } catch {
+              return null;
+            }
+          }),
+        );
+
+        if (!isMounted) return;
+        setLikedPostItems(
+          likedDetails.filter((post) => post && post.$id),
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchProfileData();
+    return () => {
+      isMounted = false;
+    };
   }, [userData]);
-
-  const loadProfileData = async () => {
-    try {
-      const posts =
-        await appwriteService.getPostsByUser(
-          userData.$id
-        );
-
-      setTotalPosts(posts.documents.length);
-      setMyPosts(posts.documents);
-
-      const likes =
-        await appwriteService.getUserLikes(
-          userData.$id
-        );
-
-      setLikedPosts(likes.documents.length);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   return (
     <Container>
       <div className="max-w-6xl mx-auto py-10">
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-500 to-green-700 rounded-3xl shadow-2xl p-8 text-white mb-8">
+        <div className="bg-linear-to-r from-emerald-500 to-green-700 rounded-3xl shadow-2xl p-8 text-white mb-8">
 
           <div className="flex flex-col md:flex-row items-center gap-6">
 
@@ -98,62 +127,122 @@ function Profile() {
 
         </div>
 
-        {/* My Posts */}
+        <div className="mb-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+              activeTab === "posts"
+                ? "bg-emerald-600 text-white"
+                : "bg-white text-gray-700 border border-gray-200"
+            }`}
+            onClick={() => setActiveTab("posts")}
+          >
+            My Posts
+          </button>
+
+          <button
+            type="button"
+            className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+              activeTab === "likes"
+                ? "bg-red-500 text-white"
+                : "bg-white text-gray-700 border border-gray-200"
+            }`}
+            onClick={() => setActiveTab("likes")}
+          >
+            Liked Posts
+          </button>
+        </div>
+
         <div className="bg-white rounded-3xl shadow-xl p-8">
 
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-bold">
-              My Posts
+              {activeTab === "posts"
+                ? "My Posts"
+                : "Liked Posts"}
             </h2>
 
             <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
-              {totalPosts} Posts
+              {activeTab === "posts"
+                ? `${totalPosts} Posts`
+                : `${likedPosts} Posts`}
             </span>
           </div>
 
-          {myPosts.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-5">
+          {activeTab === "posts" ? (
+            myPosts.length > 0 ? (
+              <div className="grid md:grid-cols-2 gap-5">
+                {myPosts.map((post) => (
+                  <Link
+                    key={post.$id}
+                    to={`/post/${post.$id}`}
+                    className="border rounded-2xl p-5 hover:shadow-lg hover:-translate-y-1 transition block"
+                  >
+                    <h3 className="text-xl font-bold text-gray-800">
+                      {post.title}
+                    </h3>
 
-              {myPosts.map((post) => (
-                <div
+                    <div className="flex justify-between items-center mt-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          post.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {post.status}
+                      </span>
+
+                      <span className="text-gray-400 text-sm">
+                        {new Date(post.$createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <h3 className="text-xl font-semibold text-gray-600">
+                  No Posts Yet
+                </h3>
+
+                <p className="text-gray-400 mt-2">
+                  Create your first blog post 🚀
+                </p>
+              </div>
+            )
+          ) : likedPostItems.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-5">
+              {likedPostItems.map((post) => (
+                <Link
                   key={post.$id}
-                  className="border rounded-2xl p-5 hover:shadow-lg hover:-translate-y-1 transition"
+                  to={`/post/${post.$id}`}
+                  className="border rounded-2xl p-5 hover:shadow-lg hover:-translate-y-1 transition block"
                 >
                   <h3 className="text-xl font-bold text-gray-800">
                     {post.title}
                   </h3>
 
                   <div className="flex justify-between items-center mt-4">
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        post.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {post.status}
+                    <span className="px-3 py-1 rounded-full text-sm bg-slate-100 text-slate-700">
+                      Liked
                     </span>
 
                     <span className="text-gray-400 text-sm">
-                      {new Date(
-                        post.$createdAt
-                      ).toLocaleDateString()}
+                      {new Date(post.$createdAt).toLocaleDateString()}
                     </span>
-
                   </div>
-                </div>
+                </Link>
               ))}
-
             </div>
           ) : (
             <div className="text-center py-10">
               <h3 className="text-xl font-semibold text-gray-600">
-                No Posts Yet
+                No liked posts yet
               </h3>
 
               <p className="text-gray-400 mt-2">
-                Create your first blog post 🚀
+                Like posts to see them here.
               </p>
             </div>
           )}

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
 import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
 
-const PostCard = ({ $id, title, featuredImage }) => {
-
-
+const PostCard = ({ $id, title, featuredImage, category }) => {
+  const normalizedCategory = typeof category === "string"
+    ? category
+    : Array.isArray(category)
+      ? category.join(", ")
+      : "";
 
   return (
     <Link to={`/post/${$id}`}>
@@ -20,6 +22,8 @@ const PostCard = ({ $id, title, featuredImage }) => {
           duration-300
           border
           border-gray-100
+          dark:bg-slate-900
+          dark:border-slate-800
         "
       >
         {/* Image */}
@@ -49,18 +53,27 @@ const PostCard = ({ $id, title, featuredImage }) => {
 
         {/* Content */}
         <div className="p-5">
+          <div className="flex flex-wrap gap-2 mb-3">
+            {normalizedCategory && (
+              <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200">
+                {normalizedCategory}
+              </span>
+            )}
+          </div>
+
           <h2
             className="
               text-xl
               font-bold
               text-gray-800
               line-clamp-2
+              dark:text-slate-100
             "
           >
             {title}
           </h2>
 
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
             Read this article →
           </p>
         </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import appwriteService from "../appwrite/config";
 import { Button, Container } from "../Components";
@@ -50,29 +50,36 @@ const Post = () => {
   };
 
   useEffect(() => {
-  if (post && userData) {
-    loadLikes();
-  }
-}, [post, userData]);
+    if (!post) return;
 
-const loadLikes = async () => {
-  const likesData =
-    await appwriteService.getPostLikes(post.$id);
+    let isMounted = true;
 
-  setLikes(likesData.documents.length);
+    const fetchLikes = async () => {
+      const likesData = await appwriteService.getPostLikes(post.$id);
 
-  const userLike =
-    await appwriteService.getUserLike(
-      post.$id,
-      userData.$id
-    );
+      if (!isMounted) return;
+      setLikes(likesData?.documents?.length ?? 0);
 
-  if (userLike.documents.length > 0) {
-    setLiked(true);
-  }
-};
+      if (userData) {
+        const userLike = await appwriteService.getUserLike(
+          post.$id,
+          userData.$id,
+        );
 
- const handleLike = async () => {
+        if (!isMounted) return;
+        setLiked(userLike?.documents?.length > 0);
+      } else {
+        setLiked(false);
+      }
+    };
+
+    fetchLikes();
+    return () => {
+      isMounted = false;
+    };
+  }, [post, userData]);
+
+  const handleLike = async () => {
   if (!userData) return;
 
   if (!liked) {
@@ -102,20 +109,25 @@ const loadLikes = async () => {
   }
 };
 
-useEffect(() => {
-  if (post) {
-    loadComments();
-  }
-}, [post]);
+  useEffect(() => {
+    if (!post) return;
 
-const loadComments = async () => {
-  const data =
-    await appwriteService.getComments(post.$id);
+    let isMounted = true;
 
-  if (data) {
-    setComments(data.documents);
-  }
-};
+    const fetchComments = async () => {
+      const data = await appwriteService.getComments(post.$id);
+      if (!isMounted) return;
+
+      if (data) {
+        setComments(data.documents);
+      }
+    };
+
+    fetchComments();
+    return () => {
+      isMounted = false;
+    };
+  }, [post]);
 
   const handleComment = async () => {
   if (!comment.trim()) return;
@@ -151,7 +163,7 @@ const loadComments = async () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-100 py-6 md:py-10">
+    <div className="min-h-screen bg-linear-to-br from-green-50 via-white to-emerald-100 py-6 md:py-10">
       <Container>
         <div className="max-w-5xl mx-auto">
           {/* Cover Image */}
@@ -167,45 +179,52 @@ const loadComments = async () => {
               alt={post.title}
               loading="lazy"
               className="
-      w-full
-      h-64
-      sm:h-80
-      md:h-[500px]
-      object-cover
-      rounded-3xl
-      shadow-2xl
-      transition-all
-      duration-700
-      hover:scale-105
-      hover:shadow-emerald-200
-    "
+              w-full
+              h-64
+              sm:h-80
+              md:h-125
+              object-cover
+              rounded-3xl
+              shadow-2xl
+              transition-all
+              duration-700
+              hover:scale-105
+              hover:shadow-emerald-200
+              "
             />
 
             <div className="absolute inset-0 bg-black/20"></div>
 
- <button
-    onClick={handleLike}
-    className="absolute top-3 right-3 z-10"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="28"
-      height="28"
-      viewBox="0 0 24 24"
-      fill={liked ? "red" : "white"}
-      stroke={liked ? "red" : "#555"}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="drop-shadow-md hover:scale-110 transition"
+ <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+    <button
+      onClick={handleLike}
+      className="rounded-full bg-black/40 p-2 text-white hover:bg-black/60 transition"
+      type="button"
     >
-      <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
-    </svg>
-  </button>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill={liked ? "red" : "white"}
+        stroke={liked ? "red" : "#555"}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="drop-shadow-md hover:scale-110 transition"
+      >
+        <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+      </svg>
+    </button>
+
+    <span className="rounded-full bg-black/60 px-3 py-1 text-sm font-semibold text-white shadow-sm">
+      {likes}
+    </span>
+  </div>
 
             {/* Edit/Delete Buttons */}
             {isAuthor && (
-              <div className="absolute top-4 right-4 flex gap-2 z-20">
+              <div className="absolute top-4 left-4 flex gap-2 z-20">
                 <Link to={`/edit-post/${post.$id}`}>
                   <Button className="bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2">
                     Edit
@@ -242,15 +261,15 @@ const loadComments = async () => {
             {/* Content */}
             <div
               className="
-    prose
-    prose-sm
-    sm:prose
-    lg:prose-lg
-    max-w-none
-    prose-headings:text-gray-800
-    prose-p:text-gray-700
-    prose-img:rounded-xl
-  "
+              prose
+              prose-sm
+              sm:prose
+              lg:prose-lg
+              max-w-none
+              prose-headings:text-gray-800
+              prose-p:text-gray-700
+              prose-img:rounded-xl
+             "
             >
               {parse(post.content)}
             </div>
