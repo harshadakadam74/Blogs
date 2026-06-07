@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { Outlet } from "react-router-dom";
@@ -13,7 +13,6 @@ const App = () => {
 
     // Loading should start true
     const [loading, setLoading] = useState(true);
-
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -38,11 +37,9 @@ const App = () => {
 
     }, [dispatch]);
 
-  
     return !loading ? (
         <>
             <Header />
-
             <main className="min-h-screen">
                 {/* App Content */}
                 <Outlet />

@@ -98,7 +98,7 @@ const Post = () => {
         userData.$id
       );
 
-    if (userLike.documents.length > 0) {
+    if (userLike.documents && userLike.documents.length > 0) {
       await appwriteService.removeLike(
         userLike.documents[0].$id
       );

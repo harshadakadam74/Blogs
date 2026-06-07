@@ -26,6 +26,7 @@ export class Service {
     content,
     featuredImage,
     status,
+    category,
     userId
 }) {
     try {
@@ -38,6 +39,7 @@ export class Service {
                 content,
                 featuredImage,
                 status,
+                category,
                 userId
             }
         );
@@ -52,7 +54,7 @@ export class Service {
     // Update Post
     async updatePost(
         slug,
-        { title, content, featuredImage, status }
+        { title, content, featuredImage, status, category }
     ) {
         try {
             return await this.databases.updateDocument(
@@ -63,7 +65,8 @@ export class Service {
                     title,
                     content,
                     featuredImage,
-                    status
+                    status,
+                    category,
                 }
             );
         } catch (error) {

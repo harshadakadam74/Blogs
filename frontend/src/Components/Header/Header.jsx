@@ -11,11 +11,11 @@ function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
       <Container>
-        <nav className="grid grid-cols-3 items-center h-20">
+        <nav className="grid grid-cols-3  items-center h-20">
 
           {/* LEFT - Logo */}
           <div className="justify-self-start">
-            <Link to="/" className="flex items-center gap-3 group ml-2 sm:ml-7">
+            <Link to="/" className="flex items-center gap-3 group  sm:ml-7">
               <div
                 className="
                   w-11 h-11 sm:w-12 sm:h-12

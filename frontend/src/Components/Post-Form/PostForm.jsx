@@ -1,20 +1,23 @@
-import React, { useCallback, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback, useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { Button, Input, Select, RTE } from "../index";
 import appwriteService from "../../appwrite/config";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const PostForm = ({ post }) => {
-  const { register, handleSubmit, watch, setValue, control, getValues } =
+  const { register, handleSubmit, setValue, control, getValues } =
     useForm({
       defaultValues: {
         title: post?.title || "",
         slug: post?.slug || "",
         content: post?.content || "",
         status: post?.status || "active",
+        category: post?.category || "",
       },
     });
+
+  const titleValue = useWatch({ control, name: "title" });
 
   const navigate = useNavigate();
 
@@ -72,16 +75,12 @@ const PostForm = ({ post }) => {
   }, []);
 
   useEffect(() => {
-    const subscription = watch((value, { name }) => {
-      if (name === "title") {
-        setValue("slug", slugTransform(value.title), {
-          shouldValidate: true,
-        });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, slugTransform, setValue]);
+    if (titleValue !== undefined) {
+      setValue("slug", slugTransform(titleValue), {
+        shouldValidate: true,
+      });
+    }
+  }, [titleValue, slugTransform, setValue]);
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 py-5">
@@ -141,6 +140,17 @@ const PostForm = ({ post }) => {
           )}
 
           <Select
+            options={["Select Category", "Technology", "Programming", "AI", "Education"]}
+            placeholder="Select Category"
+            label="Category"
+            className="mb-4"
+            {...register("category", {
+              required: true,
+              validate: (value) => value !== "Select Category",
+            })}
+          />
+
+          <Select
             options={["active", "inactive"]}
             label="Status"
             className="mb-4"
@@ -155,7 +165,7 @@ const PostForm = ({ post }) => {
               w-full
               py-3
              rounded-xl
-             bg-gradient-to-r
+             bg-linear-to-r
              from-green-500
              to-emerald-600
              text-white
