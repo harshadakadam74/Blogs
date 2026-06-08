@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Container } from "../Components";
+import { ThumbsUp } from "lucide-react";
 import appwriteService from "../appwrite/config";
 
 function Profile() {
@@ -104,7 +105,7 @@ function Profile() {
           <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition">
 
             <h2 className="text-gray-600 text-lg">
-              Total Posts
+              Total
             </h2>
 
             <p className="text-6xl font-black text-emerald-600 mt-3">
@@ -116,7 +117,7 @@ function Profile() {
           <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition">
 
             <h2 className="text-gray-600 text-lg">
-              Liked Posts ❤️
+              Liked<ThumbsUp />
             </h2>
 
             <p className="text-6xl font-black text-red-500 mt-3">

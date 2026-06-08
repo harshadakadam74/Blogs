@@ -22,40 +22,36 @@ const PostCard = ({ $id, title, featuredImage, category }) => {
           duration-300
           border
           border-gray-100
-          dark:bg-slate-900
-          dark:border-slate-800
         "
       >
         {/* Image */}
-      <div className="relative overflow-hidden">
-  <img
-    src={
-      featuredImage
-        ? appwriteService.getFilePreview(featuredImage).toString()
-        : "/placeholder.jpg"
-    }
-    alt={title}
-    className="
-      w-full
-      h-56
-      object-cover
-      hover:scale-110
-      transition-transform
-      duration-500
-    "
-    onError={(e) => {
-      e.target.src = "/placeholder.jpg";
-    }}
-  />
-
-  
-</div>
+        <div className="relative overflow-hidden">
+          <img
+            src={
+              featuredImage
+                ? appwriteService.getFilePreview(featuredImage).toString()
+                : "/placeholder.jpg"
+            }
+            alt={title}
+            className="
+              w-full
+              h-56
+              object-cover
+              hover:scale-110
+              transition-transform
+              duration-500
+            "
+            onError={(e) => {
+              e.target.src = "/placeholder.jpg";
+            }}
+          />
+        </div>
 
         {/* Content */}
         <div className="p-5">
           <div className="flex flex-wrap gap-2 mb-3">
             {normalizedCategory && (
-              <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200">
+              <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                 {normalizedCategory}
               </span>
             )}
@@ -67,13 +63,12 @@ const PostCard = ({ $id, title, featuredImage, category }) => {
               font-bold
               text-gray-800
               line-clamp-2
-              dark:text-slate-100
             "
           >
             {title}
           </h2>
 
-          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+          <p className="mt-2 text-sm text-gray-500">
             Read this article →
           </p>
         </div>

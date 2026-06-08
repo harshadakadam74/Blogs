@@ -25,6 +25,7 @@ import { AuthLayout } from "./Components";
 import Profile from "./Pages/Profile";
 import AllLikes from "./Pages/AllLikes";
 import AllComments from "./Pages/AllComments";
+import Dashboard from "./Pages/Dashboard";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -114,7 +115,18 @@ const router = createBrowserRouter(
           </AuthLayout>
         }
       />
+
+      <Route
+        path="/dashboard"
+        element={
+          <AuthLayout authentication={true}>
+            <Dashboard/>
+          </AuthLayout>
+        }
+      />
+
     </Route>
+    
   )
 );
 createRoot(document.getElementById("root")).render(

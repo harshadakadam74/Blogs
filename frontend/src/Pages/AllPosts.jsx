@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import appwriteService from "../appwrite/config";
 import { Container, PostCard } from "../Components";
+import { FileText, Search } from "lucide-react";
 
 const AllPosts = () => {
   const categories = ["All", "Technology", "Programming", "AI", "Education"];
@@ -117,7 +118,7 @@ const AllPosts = () => {
                 }}
                 className="w-full sm:w-auto rounded-3xl bg-emerald-600 px-6 py-4 text-white font-semibold shadow-sm hover:bg-emerald-700 transition"
               >
-                Search
+                <Search />
               </button>
             </div>
 
@@ -193,7 +194,7 @@ const AllPosts = () => {
             </>
           ) : (
             <div className="flex flex-col justify-center items-center py-16 sm:py-24 px-4 text-center">
-              <div className="text-5xl sm:text-7xl mb-4">🔍</div>
+              <div className="text-5xl sm:text-7xl mb-4"><Search /></div>
 
               <h2 className="text-xl sm:text-2xl font-bold text-gray-700">
                 No posts match your search or category filter
@@ -206,7 +207,7 @@ const AllPosts = () => {
           )
         ) : (
           <div className="flex flex-col justify-center items-center py-16 sm:py-24 px-4 text-center">
-            <div className="text-5xl sm:text-7xl mb-4">📝</div>
+            <div className="text-5xl sm:text-7xl mb-4"><FileText /></div>
 
             <h2 className="text-xl sm:text-2xl font-bold text-gray-700">
               No Posts Available

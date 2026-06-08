@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import appwriteService from "../appwrite/config";
 import { Container, PostCard } from "../Components";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -35,25 +36,47 @@ const Home = () => {
    return (
   <div className="bg-gray-50 min-h-screen">
     
-    {/* Hero Section */}
-    <section className="bg-gradient-to-r from-emerald-600 to-green-500 text-white">
-      <Container>
-        <div className="py-16 md:py-24 text-center">
-          <h1 className="text-4xl md:text-6xl font-black">
-            Share Your Story
-          </h1>
+   {/* Hero Section */}
+<section className="relative overflow-hidden  bg-gradient-to-br from-emerald-700 via-green-600 to-teal-700 text-white">
+  <Container >
+    <div className="py-20 md:py-32 text-center relative z-10">
 
-          <p className="mt-5 text-lg max-w-2xl mx-auto text-green-50">
-            Discover blogs, tutorials, experiences and ideas from creators
-            around the world.
-          </p>
+      <span className="inline-block px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-sm font-semibold">
+          Welcome to Scriptora
+      </span>
 
-          <button className="mt-8 px-8 py-3 bg-white text-emerald-700 font-bold rounded-full shadow-lg hover:scale-105 transition">
-            Start Reading
-          </button>
-        </div>
-      </Container>
-    </section>
+      <h1 className="mt-6 text-5xl md:text-7xl font-black leading-tight">
+        Share Your
+        <span className="block text-yellow-300">
+          Stories & Ideas
+        </span>
+      </h1>
+
+      <p className="mt-6 text-lg md:text-xl max-w-3xl mx-auto text-emerald-50">
+        Discover blogs, tutorials, experiences, programming tips,
+        AI insights and educational content from creators around
+        the world.
+      </p>
+
+      <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
+        <button className="px-8 py-4 bg-white text-emerald-700 font-bold rounded-full shadow-xl hover:scale-105 transition">
+          Start Reading
+        </button>
+
+        <Link to="/all-posts" className="px-8 py-4 border-2 border-white rounded-full font-bold hover:bg-white hover:text-emerald-700 transition">
+          Explore Posts
+        </Link>
+      </div>
+
+      
+    </div>
+  </Container>
+
+  {/* Background Blur Circles */}
+  <div className="absolute -top-20 -left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+
+  <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-300/10 rounded-full blur-3xl"></div>
+</section>
 
     {/* Stats */}
     <section className="py-10">
@@ -93,7 +116,7 @@ const Home = () => {
           </span>
 
           <h2 className="text-3xl font-bold mt-4">
-            Explore Trending Stories
+            Explore Trending Posts
           </h2>
 
           <p className="text-gray-600 mt-3">
