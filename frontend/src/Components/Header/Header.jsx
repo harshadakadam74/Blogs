@@ -3,6 +3,7 @@ import { Container, Logo, LogoutBtn } from "../index";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+
 function Header() {
   const authStatus = useSelector((state) => state.auth.status);
   const navigate = useNavigate();
@@ -77,18 +78,7 @@ function Header() {
               </button>
             )}
 
-            <button
-  onClick={() => navigate("/dashboard")}
-  className="
-    px-5 py-2.5 rounded-xl
-    border border-blue-200
-    text-blue-700
-    font-semibold
-    hover:bg-blue-50
-  "
->
-  Dashboard
-</button>
+          
           </div>
 
           {/* RIGHT */}

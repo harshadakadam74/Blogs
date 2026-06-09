@@ -23,9 +23,8 @@ import EditPost from "./Pages/EditPost";
 import Post from "./Pages/Post";
 import { AuthLayout } from "./Components";
 import Profile from "./Pages/Profile";
-import AllLikes from "./Pages/AllLikes";
-import AllComments from "./Pages/AllComments";
-import Dashboard from "./Pages/Dashboard";
+import BookMark from "./Pages/BookMark";
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -71,25 +70,6 @@ const router = createBrowserRouter(
       />
 
       <Route
-        path="all-likes"
-        element={
-          <AuthLayout authentication={true}>
-            <AllLikes />
-          </AuthLayout>
-        }
-      />
-
-      <Route
-        path="all-comments"
-        element={
-          <AuthLayout authentication={true}>
-            <AllComments />
-          </AuthLayout>
-        }
-      />
-
-
-      <Route
         path="add-post"
         element={
           <AuthLayout authentication={true}>
@@ -117,13 +97,14 @@ const router = createBrowserRouter(
       />
 
       <Route
-        path="/dashboard"
-        element={
-          <AuthLayout authentication={true}>
-            <Dashboard/>
-          </AuthLayout>
-        }
+      path="bookmarks"
+      element={
+        <AuthLayout authentication={true}>
+          <BookMark />
+        </AuthLayout>
+      }
       />
+
 
     </Route>
     

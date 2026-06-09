@@ -4,6 +4,7 @@ import appwriteService from "../appwrite/config";
 import { Button, Container } from "../Components";
 import parse from "html-react-parser";
 import { useSelector } from "react-redux";
+import { Bookmark,BookmarkCheck } from "lucide-react";
 
 const Post = () => {
   const [post, setPost] = useState(null);
@@ -12,6 +13,12 @@ const Post = () => {
 
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+
+  const [bookmarked, setBookmarked] =
+  useState(false);
+
+  const [bookmarkDoc, setBookmarkDoc] =
+  useState(null);
 
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -150,6 +157,61 @@ const Post = () => {
   }
 };
 
+
+ useEffect(() => {
+  const loadBookmark = async () => {
+    if (post && userData) {
+      await checkBookmark();
+    }
+  };
+
+  loadBookmark();
+}, [post, userData]);
+
+const checkBookmark = async () => {
+  if (!post || !userData) return;
+
+  try {
+    const res = await appwriteService.getUserBookmark(
+      post.$id,
+      userData.$id
+    );
+
+    if (res.documents.length > 0) {
+      setBookmarked(true);
+      setBookmarkDoc(res.documents[0].$id);
+    } else {
+      setBookmarked(false);
+      setBookmarkDoc(null);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleBookmark = async () => {
+  if (!userData) return;
+
+  if (bookmarked) {
+    await appwriteService.removeBookmark(
+      bookmarkDoc
+    );
+
+    setBookmarked(false);
+    setBookmarkDoc(null);
+
+  } else {
+    const doc =
+      await appwriteService.addBookmark(
+        post.$id,
+        userData.$id
+      );
+
+    setBookmarked(true);
+    setBookmarkDoc(doc.$id);
+  }
+};
+
   if (!post) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-green-50">
@@ -216,10 +278,31 @@ const Post = () => {
         <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
       </svg>
     </button>
-
-    <span className="rounded-full bg-black/60 px-3 py-1 text-sm font-semibold text-white shadow-sm">
-      {likes}
-    </span>
+    
+     {/* Bookmark Button */}
+  <button
+    onClick={handleBookmark}
+    className="
+      bg-white
+      p-2
+      rounded-full
+      shadow-md
+      hover:scale-110
+      transition
+    "
+  >
+    {bookmarked ? (
+      <BookmarkCheck
+        size={22}
+        className="text-emerald-600"
+      />
+    ) : (
+      <Bookmark
+        size={22}
+        className="text-gray-700"
+      />
+    )}
+  </button>
   </div>
 
             {/* Edit/Delete Buttons */}

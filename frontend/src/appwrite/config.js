@@ -271,7 +271,6 @@ async addComment({
 }
 
 // Get Comments for a Post
-
 async getComments(postId) {
   try {
     return await this.databases.listDocuments(
@@ -309,6 +308,150 @@ async getUserLikes(userId) {
       configVariables.appwriteLikesCollectionId,
       [
         Query.equal("userId", userId)
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Save Bookmark
+async addBookmark(postId, userId) {
+  try {
+    return await this.databases.createDocument(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteBookmarksCollectionId,
+      ID.unique(),
+      {
+        postId,
+        userId,
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Remove Bookmark
+async removeBookmark(documentId) {
+  try {
+    await this.databases.deleteDocument(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteBookmarksCollectionId,
+      documentId
+    );
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+// Check Bookmark
+async getUserBookmark(postId, userId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteBookmarksCollectionId,
+      [
+        Query.equal("postId", postId),
+        Query.equal("userId", userId),
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Get User Bookmarks
+async getUserBookmarks(userId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteBookmarksCollectionId,
+      [
+        Query.equal("userId", userId),
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// follow user
+async followUser(followerId, followingId) {
+  try {
+    return await this.databases.createDocument(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteFollowscCollectionId,
+      ID.unique(),
+      {
+        followerId,
+        followingId,
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// unfollow
+async unfollowUser(docId) {
+  try {
+    return await this.databases.deleteDocument(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteFollowscCollectionId,
+      docId
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async getFollow(followerId, followingId) {
+  return this.getUserFollow(followerId, followingId);
+}
+
+// get user follow
+async getUserFollow(followerId, followingId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteFollowscCollectionId,
+      [
+        Query.equal("followerId", followerId),
+        Query.equal("followingId", followingId),
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// get followers
+async getFollowers(userId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteFollowscCollectionId,
+      [
+        Query.equal("followingId", userId),
+      ]
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// get following
+async getFollowing(userId) {
+  try {
+    return await this.databases.listDocuments(
+      configVariables.appwriteDatabaseId,
+      configVariables.appwriteFollowscCollectionId,
+      [
+        Query.equal("followerId", userId),
       ]
     );
   } catch (error) {
