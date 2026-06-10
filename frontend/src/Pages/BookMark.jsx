@@ -55,7 +55,7 @@ function BookMarks() {
       <div className="py-10">
 
         <h1 className="text-4xl font-bold mb-8">
-          📑 My Bookmarks
+           My Bookmarks
         </h1>
 
         {posts.length > 0 ? (

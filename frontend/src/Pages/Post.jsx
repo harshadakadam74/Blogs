@@ -4,7 +4,7 @@ import appwriteService from "../appwrite/config";
 import { Button, Container } from "../Components";
 import parse from "html-react-parser";
 import { useSelector } from "react-redux";
-import { Bookmark,BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 
 const Post = () => {
   const [post, setPost] = useState(null);
@@ -14,11 +14,14 @@ const Post = () => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
 
-  const [bookmarked, setBookmarked] =
-  useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
-  const [bookmarkDoc, setBookmarkDoc] =
-  useState(null);
+  const [bookmarkDoc, setBookmarkDoc] = useState(null);
+
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followDoc, setFollowDoc] = useState(null);
 
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -87,34 +90,27 @@ const Post = () => {
   }, [post, userData]);
 
   const handleLike = async () => {
-  if (!userData) return;
+    if (!userData) return;
 
-  if (!liked) {
-    await appwriteService.addLike(
-      post.$id,
-      userData.$id
-    );
+    if (!liked) {
+      await appwriteService.addLike(post.$id, userData.$id);
 
-    setLiked(true);
-    setLikes((prev) => prev + 1);
-
-  } else {
-    const userLike =
-      await appwriteService.getUserLike(
+      setLiked(true);
+      setLikes((prev) => prev + 1);
+    } else {
+      const userLike = await appwriteService.getUserLike(
         post.$id,
-        userData.$id
+        userData.$id,
       );
 
-    if (userLike.documents && userLike.documents.length > 0) {
-      await appwriteService.removeLike(
-        userLike.documents[0].$id
-      );
+      if (userLike.documents && userLike.documents.length > 0) {
+        await appwriteService.removeLike(userLike.documents[0].$id);
+      }
+
+      setLiked(false);
+      setLikes((prev) => prev - 1);
     }
-
-    setLiked(false);
-    setLikes((prev) => prev - 1);
-  }
-};
+  };
 
   useEffect(() => {
     if (!post) return;
@@ -137,80 +133,134 @@ const Post = () => {
   }, [post]);
 
   const handleComment = async () => {
-  if (!comment.trim()) return;
+    if (!comment.trim()) return;
 
-  const newComment =
-    await appwriteService.addComment({
+    const newComment = await appwriteService.addComment({
       postId: post.$id,
       userId: userData.$id,
       authorName: userData.name,
       comment,
     });
 
-  if (newComment) {
-    setComments((prev) => [
-      ...prev,
-      newComment,
-    ]);
+    if (newComment) {
+      setComments((prev) => [...prev, newComment]);
 
-    setComment("");
-  }
-};
-
-
- useEffect(() => {
-  const loadBookmark = async () => {
-    if (post && userData) {
-      await checkBookmark();
+      setComment("");
     }
   };
 
-  loadBookmark();
-}, [post, userData]);
+  useEffect(() => {
+    if (!userData || !post) return;
 
-const checkBookmark = async () => {
-  if (!post || !userData) return;
+    let isMounted = true;
 
-  try {
-    const res = await appwriteService.getUserBookmark(
-      post.$id,
-      userData.$id
-    );
+    const checkFollow = async () => {
+      try {
+        const res = await appwriteService.getFollow(userData.$id, post.userId);
 
-    if (res.documents.length > 0) {
-      setBookmarked(true);
-      setBookmarkDoc(res.documents[0].$id);
+        if (!isMounted) return;
+
+        if (res?.documents?.length > 0) {
+          setIsFollowing(true);
+          setFollowDoc(res.documents[0].$id);
+        } else {
+          setIsFollowing(false);
+          setFollowDoc(null);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const fetchFollowCounts = async () => {
+      try {
+        const followersRes = await appwriteService.getFollowers(post.userId);
+        const followingRes = await appwriteService.getFollowing(post.userId);
+
+        if (!isMounted) return;
+
+        setFollowers(followersRes?.documents?.length ?? 0);
+        setFollowing(followingRes?.documents?.length ?? 0);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    checkFollow();
+    fetchFollowCounts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userData, post]);
+
+  const handleFollow = async () => {
+    if (!userData || !post) return;
+
+    if (isFollowing) {
+      if (followDoc) {
+        await appwriteService.unfollowUser(followDoc);
+      }
+      setIsFollowing(false);
+      setFollowDoc(null);
+      setFollowers((prev) => Math.max(prev - 1, 0));
     } else {
+      const doc = await appwriteService.followUser(userData.$id, post.userId);
+
+      if (doc) {
+        setFollowDoc(doc.$id);
+        setIsFollowing(true);
+        setFollowers((prev) => prev + 1);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const checkBookmark = async () => {
+      if (!post || !userData) return;
+
+      try {
+        const res = await appwriteService.getUserBookmark(
+          post.$id,
+          userData.$id,
+        );
+
+        if (res.documents.length > 0) {
+          setBookmarked(true);
+          setBookmarkDoc(res.documents[0].$id);
+        } else {
+          setBookmarked(false);
+          setBookmarkDoc(null);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const loadBookmark = async () => {
+      if (post && userData) {
+        await checkBookmark();
+      }
+    };
+
+    loadBookmark();
+  }, [post, userData]);
+
+  const handleBookmark = async () => {
+    if (!userData) return;
+
+    if (bookmarked) {
+      await appwriteService.removeBookmark(bookmarkDoc);
+
       setBookmarked(false);
       setBookmarkDoc(null);
+    } else {
+      const doc = await appwriteService.addBookmark(post.$id, userData.$id);
+
+      setBookmarked(true);
+      setBookmarkDoc(doc.$id);
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const handleBookmark = async () => {
-  if (!userData) return;
-
-  if (bookmarked) {
-    await appwriteService.removeBookmark(
-      bookmarkDoc
-    );
-
-    setBookmarked(false);
-    setBookmarkDoc(null);
-
-  } else {
-    const doc =
-      await appwriteService.addBookmark(
-        post.$id,
-        userData.$id
-      );
-
-    setBookmarked(true);
-    setBookmarkDoc(doc.$id);
-  }
-};
+  };
 
   if (!post) {
     return (
@@ -257,32 +307,32 @@ const handleBookmark = async () => {
 
             <div className="absolute inset-0 bg-black/20"></div>
 
- <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-    <button
-      onClick={handleLike}
-      className="rounded-full bg-black/40 p-2 text-white hover:bg-black/60 transition"
-      type="button"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill={liked ? "red" : "white"}
-        stroke={liked ? "red" : "#555"}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="drop-shadow-md hover:scale-110 transition"
-      >
-        <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
-      </svg>
-    </button>
-    
-     {/* Bookmark Button */}
-  <button
-    onClick={handleBookmark}
-    className="
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+              <button
+                onClick={handleLike}
+                className="rounded-full bg-black/40 p-2 text-white hover:bg-black/60 transition"
+                type="button"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill={liked ? "red" : "white"}
+                  stroke={liked ? "red" : "#555"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="drop-shadow-md hover:scale-110 transition"
+                >
+                  <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+                </svg>
+              </button>
+
+              {/* Bookmark Button */}
+              <button
+                onClick={handleBookmark}
+                className="
       bg-white
       p-2
       rounded-full
@@ -290,20 +340,14 @@ const handleBookmark = async () => {
       hover:scale-110
       transition
     "
-  >
-    {bookmarked ? (
-      <BookmarkCheck
-        size={22}
-        className="text-emerald-600"
-      />
-    ) : (
-      <Bookmark
-        size={22}
-        className="text-gray-700"
-      />
-    )}
-  </button>
-  </div>
+              >
+                {bookmarked ? (
+                  <BookmarkCheck size={22} className="text-emerald-600" />
+                ) : (
+                  <Bookmark size={22} className="text-gray-700" />
+                )}
+              </button>
+            </div>
 
             {/* Edit/Delete Buttons */}
             {isAuthor && (
@@ -381,28 +425,24 @@ const handleBookmark = async () => {
               </div>
 
               <div className="mt-6 space-y-4">
-               {comments.map((item) => (
-  <div
-    key={item.$id}
-    className="bg-gray-50 border border-gray-200 rounded-xl p-4"
-  >
-    <div className="flex justify-between">
-      <h4 className="font-semibold text-gray-800">
-        {item.authorName}
-      </h4>
+                {comments.map((item) => (
+                  <div
+                    key={item.$id}
+                    className="bg-gray-50 border border-gray-200 rounded-xl p-4"
+                  >
+                    <div className="flex justify-between">
+                      <h4 className="font-semibold text-gray-800">
+                        {item.authorName}
+                      </h4>
 
-      <span className="text-xs text-gray-500">
-        {new Date(
-          item.createdAt
-        ).toLocaleDateString()}
-      </span>
-    </div>
+                      <span className="text-xs text-gray-500">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
 
-    <p className="text-gray-600 mt-2">
-      {item.comment}
-    </p>
-  </div>
-))}
+                    <p className="text-gray-600 mt-2">{item.comment}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -433,26 +473,60 @@ const handleBookmark = async () => {
             </h1>
 
             {/* Author */}
-            <div className="flex items-center gap-3 mb-8">
-              <div
-                className="
-                  w-12 h-12
-                  rounded-full
-                  bg-green-600
-                  text-white
-                  flex
-                  items-center
-                  justify-center
-                  font-bold
-                "
-              >
-                A
+            <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="
+                    w-12 h-12
+                    rounded-full
+                    bg-green-600
+                    text-white
+                    flex
+                    items-center
+                    justify-center
+                    font-bold
+                  "
+                >
+                  {post.authorName?.charAt(0)?.toUpperCase() || "A"}
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-gray-800">
+                    {post.authorName || "Author"}
+                  </h3>
+
+                  <p className="text-sm text-gray-500">
+                    Published on Scriptora
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-gray-800">Author</h3>
+              {userData && post.userId !== userData.$id && (
+                <button
+                  onClick={handleFollow}
+                  className={`px-5 py-2 rounded-xl font-semibold transition ${
+                    isFollowing ? "bg-gray-200" : "bg-emerald-600 text-white"
+                  }`}
+                  type="button"
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+              )}
+            </div>
 
-                <p className="text-sm text-gray-500">Published on Scriptora</p>
+            <div className="flex flex-wrap items-center gap-6 mb-8">
+              <div className="text-sm text-gray-500">
+                Followers
+                <span className="ml-2 font-semibold text-gray-800">
+                  {followers}
+                </span>
+              </div>
+
+              <div className="text-sm text-gray-500">
+                Following
+                <span className="ml-2 font-semibold text-gray-800">
+                  {following}
+                </span>
               </div>
             </div>
 

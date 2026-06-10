@@ -24,6 +24,11 @@ import Post from "./Pages/Post";
 import { AuthLayout } from "./Components";
 import Profile from "./Pages/Profile";
 import BookMark from "./Pages/BookMark";
+import MyPosts from "./Pages/MyPosts";
+import LikedPosts from "./Pages/LikedPosts";
+import Bookmarks from "./Pages/Bookmarks";
+import Followers from "./Pages/Followers";
+import Following from "./Pages/Following";
 
 
 const router = createBrowserRouter(
@@ -65,6 +70,46 @@ const router = createBrowserRouter(
         element={
           <AuthLayout authentication={true}>
             <Profile />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="profile/posts"
+        element={
+          <AuthLayout authentication={true}>
+            <MyPosts />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="profile/likes"
+        element={
+          <AuthLayout authentication={true}>
+            <LikedPosts />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="profile/bookmarks"
+        element={
+          <AuthLayout authentication={true}>
+            <Bookmarks />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="profile/followers"
+        element={
+          <AuthLayout authentication={true}>
+            <Followers />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="profile/following"
+        element={
+          <AuthLayout authentication={true}>
+            <Following />
           </AuthLayout>
         }
       />
