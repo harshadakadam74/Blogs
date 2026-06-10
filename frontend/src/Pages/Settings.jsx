@@ -1,74 +1,387 @@
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
 import appwriteService from "../appwrite/config";
+import authService from "../appwrite/auth";
+import { LogOut, UserPen,Image, LockKeyhole, BellRing, SunMoon, ChartLine } from "lucide-react";
 
 function Settings() {
   const userData = useSelector((state) => state.auth.userData);
+  const navigate = useNavigate();
+
+  const [profileName, setProfileName] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const currentAvatarPreview =
+    avatarPreview ||
+    (userData?.avatar
+      ? appwriteService.getAvatarPreview(userData.avatar).toString()
+      : null);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [newFollowerAlerts, setNewFollowerAlerts] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [likedPosts, setLikedPosts] = useState(0);
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
+
+  useEffect(() => {
+    if (!userData) return;
+
+    let isMounted = true;
+
+    const fetchStats = async () => {
+      try {
+        const posts = await appwriteService.getPostsByUser(userData.$id);
+        const likes = await appwriteService.getUserLikes(userData.$id);
+        const followersRes = await appwriteService.getFollowers(userData.$id);
+        const followingRes = await appwriteService.getFollowing(userData.$id);
+
+        if (!isMounted) return;
+
+        setTotalPosts(posts?.documents?.length ?? 0);
+        setLikedPosts(likes?.documents?.length ?? 0);
+        setFollowers(followersRes?.documents?.length ?? 0);
+        setFollowing(followingRes?.documents?.length ?? 0);
+      } catch (error) {
+        console.log("Settings fetch stats error:", error);
+      }
+    };
+
+    fetchStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userData]);
+
+  const handleAvatarSelect = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setSelectedAvatar(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleUploadAvatar = async () => {
+    if (!selectedAvatar || !userData) return;
+
+    try {
+      const uploaded = await appwriteService.uploadAvatar(selectedAvatar);
+      if (uploaded) {
+        await appwriteService.updateUserAvatar(userData.$id, uploaded.$id);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log("Avatar upload error:", error);
+    }
+  };
+
+  const handleSaveProfile = () => {
+    window.alert("Profile settings saved.");
+  };
+
+  const handleLogout = async () => {
+    await authService.logout();
+    navigate("/login");
+  };
+
+  const handleDeleteAccount = () => {
+    window.alert("Delete account feature is not configured yet.");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <h1 className="text-4xl font-bold mb-8">Scriptora Settings</h1>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Profile Card */}
-          <div className="bg-white p-6 rounded-3xl shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Profile</h2>
+        <div className="lg:hidden bg-white rounded-3xl p-4 shadow-lg mb-6">
+          <nav className="flex flex-wrap gap-2">
+            <Link
+              to="/profile"
+              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+            >
+                <UserPen size={18} /> 
+                <span>Profile</span>
+            </Link>
+            <Link
+              to="/avatar"
+              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+            >
+              <Image size={18} />
+                <span> Avatar </span>
+            </Link>
+            <Link
+              to="/security"
+              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+            >
+              <LockKeyhole size={18} />
+                <span>Security</span>
+            </Link>
+            <Link
+              to="/notifications"
+              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+            >
+              <BellRing size={18}/>
+                <span>Notifications</span>
+            </Link>
+            <Link
+              to="/appearance"
+              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+            >
+               <SunMoon size={18} />
+                <span>Appearance</span>
+            </Link>
+            <Link
+              to="/stats"
+              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+            >
+              <ChartLine size={18} />
+                <span>Account Stats</span>
+            </Link>
+          </nav>
+        </div>
 
-            {userData?.avatar ? (
-              <img
-                src={appwriteService.getAvatarPreview(userData.avatar).toString()}
-                alt={userData.name}
-                className="w-24 h-24 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-emerald-600 text-white flex items-center justify-center text-3xl font-bold">
-                {userData?.name?.charAt(0)}
-              </div>
-            )}
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="hidden lg:block bg-white rounded-3xl p-6 shadow-lg h-fit lg:sticky lg:top-24">
+            <nav className="space-y-2">
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                <UserPen size={18} /> 
+                <span>Profile</span>
+              </Link>
 
-            <h3 className="mt-4 font-semibold text-gray-900">{userData?.name}</h3>
-            <p className="text-gray-500">{userData?.email}</p>
+              <Link
+                to="/avatar"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                <Image size={18} />
+                <span> Avatar </span>
+              </Link>
 
-            <div className="mt-6 space-y-3">
-              <button className="w-full bg-emerald-600 text-white py-3 rounded-xl hover:bg-emerald-700 transition">
-                Edit Profile
+              <Link
+                to="/security"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                <LockKeyhole size={18} />
+                <span>Security</span>
+              </Link>
+
+              <Link
+                to="/notifications"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                <BellRing size={18}/>
+                <span>Notifications</span>
+              </Link>
+
+              <Link
+                to="/appearance"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                <SunMoon size={18} />
+                <span>Appearance</span>
+              </Link>
+
+              <Link
+                to="/stats"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                <ChartLine size={18} />
+                <span>Account Stats</span>
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="w-full text-left flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 hover:text-red-600 transition"
+              >
+                <LogOut size={18} />
+                <span>Logout</span>
               </button>
-              <button className="w-full border border-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-50 transition">
-                Upload Avatar
+            </nav>
+          </div>
+
+          {/* Content */}
+          <div className="lg:col-span-3 space-y-6">
+            <div
+              id="profile"
+              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
+            >
+              <h2 className="text-2xl font-bold mb-6">Profile Information</h2>
+              <div className="grid gap-4">
+                <input
+                  type="text"
+                  value={profileName || userData?.name || ""}
+                  onChange={(event) => setProfileName(event.target.value)}
+                  placeholder="Full Name"
+                  className="w-full border rounded-xl p-3"
+                />
+                <input
+                  type="email"
+                  disabled
+                  value={userData?.email || ""}
+                  className="w-full border rounded-xl p-3 mt-4 bg-gray-50"
+                />
+                <button
+                  onClick={handleSaveProfile}
+                  className="mt-5 bg-emerald-600 text-white px-6 py-3 rounded-xl hover:bg-emerald-700 transition"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="avatar"
+              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
+            >
+              <div className="grid gap-6 md:grid-cols-[180px_1fr] items-center">
+                <div className="flex flex-col items-center gap-4">
+                  {currentAvatarPreview ? (
+                    <img
+                      src={currentAvatarPreview}
+                      alt="Avatar preview"
+                      className="w-40 h-40 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-40 h-40 rounded-full bg-emerald-600 text-white flex items-center justify-center text-4xl font-bold">
+                      {userData?.name?.charAt(0) || "S"}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Upload a new avatar
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarSelect}
+                  />
+                  <button
+                    onClick={handleUploadAvatar}
+                    className="w-full bg-emerald-600 text-white px-6 py-3 rounded-xl hover:bg-emerald-700 transition"
+                  >
+                    Upload Avatar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="security"
+              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
+            >
+              <button className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition">
+                Change Password
               </button>
             </div>
-          </div>
 
-          {/* Account Card */}
-          <div className="bg-white p-6 rounded-3xl shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Account</h2>
-            <p className="text-gray-500 mb-6">Manage your login and account preferences.</p>
-
-            <button className="w-full bg-emerald-600 text-white py-3 rounded-xl hover:bg-emerald-700 transition">
-              Change Password
-            </button>
-          </div>
-
-          {/* Preferences Card */}
-          <div className="bg-white p-6 rounded-3xl shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Preferences</h2>
-            <p className="text-gray-500 mb-6">Customize your Scriptora experience.</p>
-
-            <div className="space-y-4">
+            <div
+              id="notifications"
+              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
+            >
+              <h2 className="text-2xl font-bold mb-6">Notifications</h2>
               <label className="flex items-center gap-3">
-                <input type="checkbox" className="h-5 w-5 rounded border-gray-300 text-emerald-600" />
-                Email notifications
+                <input
+                  type="checkbox"
+                  checked={emailNotifications}
+                  onChange={() => setEmailNotifications((prev) => !prev)}
+                  className="h-5 w-5 rounded border-gray-300 text-emerald-600"
+                />
+                Email Notifications
               </label>
+              <label className="flex items-center gap-3 mt-4">
+                <input
+                  type="checkbox"
+                  checked={newFollowerAlerts}
+                  onChange={() => setNewFollowerAlerts((prev) => !prev)}
+                  className="h-5 w-5 rounded border-gray-300 text-emerald-600"
+                />
+                New Followers Alerts
+              </label>
+            </div>
 
+            <div
+              id="appearance"
+              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
+            >
+              <h2 className="text-2xl font-bold mb-6">Appearance</h2>
+              <p className="text-gray-600 mb-4">
+                Customize your Scriptora experience.
+              </p>
               <label className="flex items-center gap-3">
-                <input type="checkbox" className="h-5 w-5 rounded border-gray-300 text-emerald-600" />
-                Dark mode
+                <input
+                  type="checkbox"
+                  checked={darkMode}
+                  onChange={() => setDarkMode((prev) => !prev)}
+                  className="h-5 w-5 rounded border-gray-300 text-emerald-600"
+                />
+                Dark Mode
               </label>
+            </div>
 
-              <label className="flex items-center gap-3">
-                <input type="checkbox" className="h-5 w-5 rounded border-gray-300 text-emerald-600" />
-                New post alerts
-              </label>
+            <div
+              id="stats"
+              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
+            >
+              <h2 className="text-2xl font-bold mb-6">Account Stats</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-3xl border border-gray-200 p-5">
+                  <h3 className="text-sm uppercase text-gray-500">Posts</h3>
+                  <p className="mt-3 text-3xl font-semibold">{totalPosts}</p>
+                </div>
+                <div className="rounded-3xl border border-gray-200 p-5">
+                  <h3 className="text-sm uppercase text-gray-500">
+                    Liked posts
+                  </h3>
+                  <p className="mt-3 text-3xl font-semibold">{likedPosts}</p>
+                </div>
+                <div className="rounded-3xl border border-gray-200 p-5">
+                  <h3 className="text-sm uppercase text-gray-500">Followers</h3>
+                  <p className="mt-3 text-3xl font-semibold">{followers}</p>
+                </div>
+                <div className="rounded-3xl border border-gray-200 p-5">
+                  <h3 className="text-sm uppercase text-gray-500">Following</h3>
+                  <p className="mt-3 text-3xl font-semibold">{following}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 shadow-lg">
+              <h2 className="text-2xl font-bold mb-6">Danger Zone</h2>
+              <div className="flex flex-col gap-4 sm:flex-row">
+              <button
+  onClick={handleLogout}
+  className="
+    group
+    flex items-center
+    gap-2
+    bg-red-600
+    text-white
+    px-4 py-3
+    rounded-xl
+    hover:bg-red-700
+    transition
+  "
+>
+  <LogOut size={18} />
+
+  <span className="font-medium">
+    Logout
+  </span>
+</button>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="border border-red-500 font-medium text-red-500 px-6 py-3 rounded-xl hover:bg-red-50 transition"
+                >
+                  Delete Account
+                </button>
+              </div>
             </div>
           </div>
         </div>

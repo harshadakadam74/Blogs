@@ -141,7 +141,7 @@ function Profile() {
                       hover:bg-emerald-700
                       text-xl
                     ">
-                      📷
+                      <Image />
                       <input
                         type="file"
                         accept="image/*"
