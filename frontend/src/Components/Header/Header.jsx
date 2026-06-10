@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Container, Logo, LogoutBtn } from "../index";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import appwriteService from "../../appwrite/config";
 
 
 function Header() {
   const authStatus = useSelector((state) => state.auth.status);
+  const userData = useSelector((state) => state.auth.userData);
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -112,7 +114,7 @@ function Header() {
                 </>
               ) : (
                 <>
-                  {/* Profile */}
+                  {/* Profile with Avatar */}
                   <button
                     onClick={() => navigate("/profile")}
                     className="
@@ -122,8 +124,36 @@ function Header() {
                       font-semibold
                       hover:bg-emerald-50
                       transition-all
+                      flex items-center gap-2
                     "
                   >
+                    {userData?.avatar ? (
+                      <img
+                        src={appwriteService
+                          .getAvatarPreview(userData.avatar)
+                          .toString()}
+                        alt={userData.name}
+                        className="
+                          w-6 h-6
+                          rounded-full
+                          object-cover
+                          border border-emerald-300
+                        "
+                      />
+                    ) : (
+                      <div
+                        className="
+                          w-6 h-6
+                          rounded-full
+                          bg-emerald-600
+                          text-white
+                          flex items-center justify-center
+                          text-xs font-bold
+                        "
+                      >
+                        {userData?.name?.charAt(0)}
+                      </div>
+                    )}
                     Profile
                   </button>
 

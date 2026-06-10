@@ -333,13 +333,13 @@ const Post = () => {
               <button
                 onClick={handleBookmark}
                 className="
-      bg-white
-      p-2
-      rounded-full
-      shadow-md
-      hover:scale-110
-      transition
-    "
+                    bg-white
+                    p-2
+                    rounded-full
+                    shadow-md
+                    hover:scale-110
+                    transition
+                  "
               >
                 {bookmarked ? (
                   <BookmarkCheck size={22} className="text-emerald-600" />
@@ -475,20 +475,34 @@ const Post = () => {
             {/* Author */}
             <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <div
-                  className="
-                    w-12 h-12
-                    rounded-full
-                    bg-green-600
-                    text-white
-                    flex
-                    items-center
-                    justify-center
-                    font-bold
-                  "
-                >
-                  {post.authorName?.charAt(0)?.toUpperCase() || "A"}
-                </div>
+                {post.author?.avatar ? (
+                  <img
+                    src={appwriteService
+                      .getAvatarPreview(post.author.avatar)
+                      .toString()}
+                    alt={post.author.name}
+                    className="
+                      w-12 h-12
+                      rounded-full
+                      object-cover
+                    "
+                  />
+                ) : (
+                  <div
+                    className="
+                      w-12 h-12
+                      rounded-full
+                      bg-green-600
+                      text-white
+                      flex
+                      items-center
+                      justify-center
+                      font-bold
+                    "
+                  >
+                    {post.authorName?.charAt(0)?.toUpperCase() || "A"}
+                  </div>
+                )}
 
                 <div>
                   <h3 className="font-semibold text-gray-800">

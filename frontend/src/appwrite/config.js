@@ -181,6 +181,50 @@ async uploadFile(file) {
     );
 }
 
+// Avatar Functions
+async uploadAvatar(file) {
+  try {
+    return await this.bucket.createFile(
+      configVariables.profileBucketId,
+      ID.unique(),
+      file
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async deleteAvatar(fileId) {
+  try {
+    return await this.bucket.deleteFile(
+      configVariables.profileBucketId,
+      fileId
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+getAvatarPreview(fileId) {
+  return this.bucket.getFileView(
+    configVariables.profileBucketId,
+    fileId
+  );
+}
+
+async updateUserAvatar(userId, avatar) {
+  try {
+    return await this.databases.updateDocument(
+      configVariables.databaseId,
+      configVariables.usersCollectionId,
+      userId,
+      { avatar }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // Get File Download Link
 async addLike(postId, userId) {
   try {

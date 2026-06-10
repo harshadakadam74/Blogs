@@ -11,6 +11,7 @@ function Profile() {
   const [bookmarkedPosts, setBookmarkedPosts] = useState(0);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
+  const [avatarFile, setAvatarFile] = useState(null);
 
   useEffect(() => {
     if (!userData) return;
@@ -51,6 +52,21 @@ function Profile() {
     };
   }, [userData]);
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const uploaded = await appwriteService.uploadAvatar(file);
+      if (!uploaded) return;
+
+      await appwriteService.updateUserAvatar(userData.$id, uploaded.$id);
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Container>
       <div className="max-w-7xl mx-auto py-10 px-4">
@@ -73,8 +89,8 @@ function Profile() {
             <div className="lg:col-span-2">
               <div
                 className="
-        bg-white
-        rounded-4xl
+                  bg-white
+                  rounded-4xl
                   shadow-lg
                   p-8
                   sticky top-24
@@ -88,10 +104,10 @@ function Profile() {
               >
                 <div className="grid md:grid-cols-[140px_1fr] gap-6 items-center">
                   {/* Profile Image */}
-                  <div className="flex justify-center">
+                  <div className="flex justify-center relative">
                     {userData?.avatar ? (
                       <img
-                        src={userData.avatar}
+                        src={appwriteService.getAvatarPreview(userData.avatar).toString()}
                         alt="Profile"
                         className="
                            w-32 h-32
@@ -114,9 +130,26 @@ function Profile() {
                           shadow-lg
                           "
                       >
-                        {userData?.name?.charAt(0).toUpperCase()}
+                        {userData?.name?.charAt(0)?.toUpperCase()}
                       </div>
                     )}
+                    <label className="
+                      absolute bottom-0 right-0
+                      bg-emerald-600 text-white
+                      w-10 h-10 rounded-full
+                      flex items-center justify-center
+                      cursor-pointer shadow-lg
+                      hover:bg-emerald-700
+                      text-xl
+                    ">
+                      📷
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                      />
+                    </label>
                   </div>
 
                   {/* User Info */}
