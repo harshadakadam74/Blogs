@@ -12,6 +12,12 @@ import Button from "./Button";
 import Input from "./Input";
 import Select from "./Select";
 import AuthLayout from "./AuthLayout";
+import AccountStats from "./Settings/AccountStats";
+import AvatarSettings from "./Settings/AvatarSettings";
+import AppearanceSettings from "./Settings/AppearanceSettings";
+import NotificationSettings from "./Settings/NotificationSettings";
+import SecuritySettings from "./Settings/SecuritySettings";
+
 
 export {
      Header,
@@ -28,5 +34,10 @@ export {
      Input,
      Select,
      AuthLayout,
+     AccountStats,
+     AvatarSettings,
+     AppearanceSettings,
+     NotificationSettings,
+     SecuritySettings,
 
 };

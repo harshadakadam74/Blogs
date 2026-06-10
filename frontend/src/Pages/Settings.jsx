@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import appwriteService from "../appwrite/config";
 import authService from "../appwrite/auth";
-import { LogOut, UserPen,Image, LockKeyhole, BellRing, SunMoon, ChartLine } from "lucide-react";
+import { LogOut, UserPen,Image, LockKeyhole, BellRing, SunMoon, ChartLine, Upload } from "lucide-react";
 
 function Settings() {
   const userData = useSelector((state) => state.auth.userData);
@@ -99,45 +99,45 @@ function Settings() {
           <nav className="flex flex-wrap gap-2">
             <Link
               to="/profile"
-              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
             >
-                <UserPen size={18} /> 
-                <span>Profile</span>
+              <UserPen size={18} />
+              <span>Profile</span>
             </Link>
             <Link
-              to="/avatar"
-              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              to="/settings/avatar"
+              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
             >
               <Image size={18} />
-                <span> Avatar </span>
+              <span>Avatar</span>
             </Link>
             <Link
-              to="/security"
-              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              to="/settings/security"
+              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
             >
               <LockKeyhole size={18} />
-                <span>Security</span>
+              <span>Security</span>
             </Link>
             <Link
-              to="/notifications"
-              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              to="/settings/notifications"
+              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
             >
-              <BellRing size={18}/>
-                <span>Notifications</span>
+              <BellRing size={18} />
+              <span>Notifications</span>
             </Link>
             <Link
-              to="/appearance"
-              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              to="/settings/appearance"
+              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
             >
-               <SunMoon size={18} />
-                <span>Appearance</span>
+              <SunMoon size={18} />
+              <span>Appearance</span>
             </Link>
             <Link
-              to="/stats"
-              className="flex-1 min-w-[120px] text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              to="/settings/stats"
+              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
             >
               <ChartLine size={18} />
-                <span>Account Stats</span>
+              <span>Account Stats</span>
             </Link>
           </nav>
         </div>
@@ -155,7 +155,7 @@ function Settings() {
               </Link>
 
               <Link
-                to="/avatar"
+                to="/settings/avatar"
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
               >
                 <Image size={18} />
@@ -163,7 +163,7 @@ function Settings() {
               </Link>
 
               <Link
-                to="/security"
+                to="/settings/security"
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
               >
                 <LockKeyhole size={18} />
@@ -171,7 +171,7 @@ function Settings() {
               </Link>
 
               <Link
-                to="/notifications"
+                to="/settings/notifications"
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
               >
                 <BellRing size={18}/>
@@ -179,7 +179,7 @@ function Settings() {
               </Link>
 
               <Link
-                to="/appearance"
+                to="/settings/appearance"
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
               >
                 <SunMoon size={18} />
@@ -187,7 +187,7 @@ function Settings() {
               </Link>
 
               <Link
-                to="/stats"
+                to="/settings/stats"
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
               >
                 <ChartLine size={18} />
@@ -262,12 +262,26 @@ function Settings() {
                     accept="image/*"
                     onChange={handleAvatarSelect}
                   />
-                  <button
-                    onClick={handleUploadAvatar}
-                    className="w-full bg-emerald-600 text-white px-6 py-3 rounded-xl hover:bg-emerald-700 transition"
-                  >
-                    Upload Avatar
-                  </button>
+                 <button
+  onClick={handleUploadAvatar}
+  className="
+    w-full
+    bg-emerald-600
+    text-white
+    font-medium
+    px-6 py-3
+    rounded-xl
+    hover:bg-emerald-700
+    transition
+    flex
+    items-center
+    justify-center
+    gap-2
+  "
+>
+  <Upload size={20} />
+  <span>Upload Avatar</span>
+</button>
                 </div>
               </div>
             </div>

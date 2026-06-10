@@ -30,7 +30,11 @@ import Bookmarks from "./Pages/Bookmarks";
 import Followers from "./Pages/Followers";
 import Following from "./Pages/Following";
 import Settings from "./Pages/Settings";
-
+import AvatarSettings from "./Components/Settings/AvatarSettings";
+import SecuritySettings from "./Components/Settings/SecuritySettings";
+import NotificationSettings from "./Components/Settings/NotificationSettings";
+import AppearanceSettings from "./Components/Settings/AppearanceSettings";
+import AccountStats from "./Components/Settings/AccountStats";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -156,6 +160,47 @@ const router = createBrowserRouter(
         element={
           <AuthLayout authentication={true}>
             <Settings />
+          </AuthLayout>
+        }
+      />
+
+      <Route
+        path="settings/avatar"
+        element={
+          <AuthLayout authentication={true}>
+            <AvatarSettings />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="settings/security"
+        element={
+          <AuthLayout authentication={true}>
+            <SecuritySettings />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="settings/notifications"
+        element={
+          <AuthLayout authentication={true}>
+            <NotificationSettings />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="settings/appearance"
+        element={
+          <AuthLayout authentication={true}>
+            <AppearanceSettings />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="settings/stats"
+        element={
+          <AuthLayout authentication={true}>
+            <AccountStats />
           </AuthLayout>
         }
       />
