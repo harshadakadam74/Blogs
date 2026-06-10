@@ -29,6 +29,7 @@ import LikedPosts from "./Pages/LikedPosts";
 import Bookmarks from "./Pages/Bookmarks";
 import Followers from "./Pages/Followers";
 import Following from "./Pages/Following";
+import Settings from "./Pages/Settings";
 
 
 const router = createBrowserRouter(
@@ -150,6 +151,14 @@ const router = createBrowserRouter(
       }
       />
 
+      <Route
+        path="settings"
+        element={
+          <AuthLayout authentication={true}>
+            <Settings />
+          </AuthLayout>
+        }
+      />
 
     </Route>
     

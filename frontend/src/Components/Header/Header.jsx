@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container, Logo, LogoutBtn } from "../index";
+import { Container, LogoutBtn } from "../index";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import appwriteService from "../../appwrite/config";
@@ -157,6 +157,20 @@ function Header() {
                     Profile
                   </button>
 
+                  <Link
+                    to="/settings"
+                    className="
+                      px-6 py-3
+                      rounded-2xl
+                      border border-gray-200
+                      text-gray-700
+                      hover:bg-gray-50
+                      transition
+                    "
+                  >
+                    Settings
+                  </Link>
+
                   {/* Add Post */}
                   <button
                     onClick={() => navigate("/add-post")}
@@ -263,6 +277,18 @@ function Header() {
                       className="w-full text-center px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 shadow-sm hover:bg-slate-100 transition"
                     >
                       Profile
+                    </button>
+                  </li>
+
+                  <li>
+                    <button
+                      onClick={() => {
+                        navigate("/settings");
+                        setMenuOpen(false);
+                      }}
+                      className="w-full text-center px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 shadow-sm hover:bg-slate-100 transition"
+                    >
+                      Settings
                     </button>
                   </li>
 
