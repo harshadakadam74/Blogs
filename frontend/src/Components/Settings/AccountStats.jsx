@@ -44,12 +44,12 @@ function AccountStats({
   ];
 
   return (
-    <div id="stats">
-      <h2 className="text-2xl font-bold mb-6">
+    <div id="stats ">
+      <h2 className="text-2xl font-bold mb-6 text-center mt-8">
         Account Stats
       </h2>
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
 

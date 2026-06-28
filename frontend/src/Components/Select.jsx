@@ -5,6 +5,8 @@ function Select(
     options = [],
     label,
     className = "",
+    placeholder = "Select an option",
+    error = false,
     ...props
   },
   ref
@@ -13,6 +15,7 @@ function Select(
 
   return (
     <div className="w-full">
+      {/* Label */}
       {label && (
         <label
           htmlFor={id}
@@ -22,35 +25,50 @@ function Select(
         </label>
       )}
 
+      {/* Select */}
       <select
         id={id}
         ref={ref}
         className={`
           w-full
-          px-4
-          py-2
+          px-4 py-2
           border
-          border-gray-300
-          rounded-lg
+          rounded-xl
           bg-white
           outline-none
+          transition-all duration-200
+
+          ${error
+            ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+            : "border-gray-300 focus:ring-pink-400 focus:border-pink-400"
+          }
+
           focus:ring-2
-          focus:ring-green-500
-          focus:border-green-500
-          transition
-          duration-200
+          shadow-sm
+          hover:shadow-md
           ${className}
         `}
         {...props}
       >
-        {options.map((option) => (
-          <option
-            key={option}
-            value={option}
-          >
-            {option}
-          </option>
-        ))}
+        {/* Placeholder */}
+        <option value="" disabled>
+          {placeholder}
+        </option>
+
+        {/* Options */}
+        {options.map((option, index) => {
+          const value =
+            typeof option === "string" ? option : option.value;
+
+          const label =
+            typeof option === "string" ? option : option.label;
+
+          return (
+            <option key={value || index} value={value}>
+              {label}
+            </option>
+          );
+        })}
       </select>
     </div>
   );

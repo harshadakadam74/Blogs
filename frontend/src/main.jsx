@@ -23,7 +23,6 @@ import EditPost from "./Pages/EditPost";
 import Post from "./Pages/Post";
 import { AuthLayout } from "./Components";
 import Profile from "./Pages/Profile";
-import BookMark from "./Pages/BookMark";
 import MyPosts from "./Pages/MyPosts";
 import LikedPosts from "./Pages/LikedPosts";
 import Bookmarks from "./Pages/Bookmarks";
@@ -35,6 +34,9 @@ import SecuritySettings from "./Components/Settings/SecuritySettings";
 import NotificationSettings from "./Components/Settings/NotificationSettings";
 import AppearanceSettings from "./Components/Settings/AppearanceSettings";
 import AccountStats from "./Components/Settings/AccountStats";
+import ForgotPassword from "./Pages/ForgotPassword";
+import ChangePassword from "./Pages/ChangePassword";
+import EditProfile from "./Pages/EditProfile";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -146,14 +148,6 @@ const router = createBrowserRouter(
         }
       />
 
-      <Route
-      path="bookmarks"
-      element={
-        <AuthLayout authentication={true}>
-          <BookMark />
-        </AuthLayout>
-      }
-      />
 
       <Route
         path="settings"
@@ -205,14 +199,40 @@ const router = createBrowserRouter(
         }
       />
 
-    </Route>
-    
-  )
+      <Route
+        path="/forgot-password"
+        element={
+          <AuthLayout authentication={false}>
+            <ForgotPassword />
+          </AuthLayout>
+        }
+      />
+
+      <Route
+      path="/change-password"
+      element={
+        <AuthLayout authentication={true}>
+          <ChangePassword/>
+        </AuthLayout>
+      }
+      />
+
+       <Route
+      path="/edit-profile"
+      element={
+        <AuthLayout authentication={true}>
+          <EditProfile/>
+        </AuthLayout>
+      }
+      />
+
+    </Route>,
+  ),
 );
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <RouterProvider router={router} />
     </Provider>
-  </StrictMode>
+  </StrictMode>,
 );

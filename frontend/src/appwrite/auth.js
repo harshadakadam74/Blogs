@@ -82,6 +82,22 @@ async createAccount({ email, password, name }) {
             );
         }
     }
+    
+//forget password
+    async resetPassword(email) {
+  return await this.account.createRecovery(
+    email,
+    "http://localhost:5173/reset-password"
+  );
+}
+
+// changge password
+async updatePassword(newPassword, oldPassword) {
+  return await this.account.updatePassword(
+    newPassword,
+    oldPassword
+  );
+}
 }
 
 const authService = new AuthService();

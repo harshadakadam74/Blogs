@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container } from "../index";
+import { Container, Logo } from "../index";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Feather, Plus, Settings } from "lucide-react";
@@ -11,39 +11,27 @@ function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
+    <header
+      className="
+  sticky
+  top-0
+  z-50
+  backdrop-blur-xl
+  bg-white/80
+  border-b
+  border-[#EFE7DF]
+  shadow-sm
+"
+    >
       <Container>
         <nav className="grid grid-cols-3 items-center h-20">
           {/* LEFT - Logo */}
           <div className="justify-self-start">
             <Link to="/" className="flex items-center gap-3 group sm:mr-34">
-              <div
-                className="
-                  w-11 h-11 sm:w-12 sm:h-12
-                  rounded-full
-                  bg-linear-to-r
-                  from-emerald-500
-                  to-green-700
-                  flex items-center justify-center
-                  shadow-md
-                "
-              >
-                <span className="text-white text-2xl font-bold">
-                  <Feather />
-                </span>
-              </div>
-
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black leading-none">
-                  <span className="text-amber-600">Script</span>
-                  <span className="text-emerald-600">ora</span>
-                </h1>
-
-                <p className="hidden sm:block text-[10px] tracking-[0.25em] uppercase text-gray-500 font-semibold mt-1">
-                  Share Your Story
-                </p>
-              </div>
-            </Link>
+             
+               <Logo/>
+              </Link>
+           
           </div>
 
           {/* CENTER - Navigation */}
@@ -51,13 +39,14 @@ function Header() {
             <button
               onClick={() => navigate("/")}
               className="
-      px-5 py-2 rounded-xl
-      font-semibold text-lg
-      text-gray-700
-      hover:bg-emerald-50
-      hover:text-emerald-600
-      transition-all
-    "
+px-5
+py-2
+rounded-full
+text-gray-700
+font-semibold
+hover:bg-gray-100
+transition
+"
             >
               Home
             </button>
@@ -66,13 +55,14 @@ function Header() {
               <button
                 onClick={() => navigate("/all-posts")}
                 className="
-        px-5 py-2 rounded-xl
-        font-semibold text-lg
-        text-gray-700
-        hover:bg-emerald-50
-        hover:text-emerald-600
-        transition-all
-      "
+px-5
+py-2
+rounded-full
+text-gray-700
+font-semibold
+hover:bg-gray-100
+transition
+"
               >
                 All Posts
               </button>
@@ -85,54 +75,40 @@ function Header() {
                 <button
                   onClick={() => navigate("/add-post")}
                   className="
-    flex items-center justify-center gap-2
-    px-5 py-2.5
-    rounded-xl
-    bg-emerald-600
+    flex items-center gap-2
+    px-5
+    py-2.5
+    rounded-full
     text-white
     font-semibold
-    hover:bg-emerald-700
-    transition-all
+    bg-gradient-to-r
+    from-[#F58529]
+    via-[#DD2A7B]
+    to-[#8134AF]
+    shadow-md
     hover:scale-105
+    transition-all
   "
                 >
                   <Plus size={18} />
-                  <span>Add Post</span>
+                  Add Post
                 </button>
 
                 <Link
                   to="/settings"
                   className="
-    group
-    flex items-center
-    overflow-hidden
-    border border-gray-200
-    rounded-xl
-    px-3 py-2.5
-    hover:bg-gray-50
-    transition-all
+    w-11
+    h-11
+    rounded-full
+    bg-gray-100
+    hover:bg-gray-200
+    flex
+    items-center
+    justify-center
+    transition
   "
                 >
-                  <Settings size={20} className="text-gray-700 flex-shrink-0" />
-
-                  <span
-                    className="
-      max-w-0
-      overflow-hidden
-      whitespace-nowrap
-      opacity-0
-      ml-0
-      group-hover:max-w-[100px]
-      group-hover:opacity-100
-      group-hover:ml-2
-      transition-all
-      duration-300
-      text-gray-700
-      font-medium
-    "
-                  >
-                    Settings
-                  </span>
+                  <Settings size={20} className="text-gray-700" />
                 </Link>
               </>
             )}
@@ -142,11 +118,15 @@ function Header() {
                 <button
                   onClick={() => navigate("/login")}
                   className="
-          px-5 py-2.5
-          rounded-xl
-          border
-          border-gray-200
-        "
+    px-5
+    py-2.5
+    rounded-full
+    border
+    border-gray-300
+    hover:bg-gray-100
+    font-medium
+    transition
+  "
                 >
                   Login
                 </button>
@@ -154,11 +134,19 @@ function Header() {
                 <button
                   onClick={() => navigate("/signup")}
                   className="
-          px-5 py-2.5
-          rounded-xl
-          bg-emerald-600
-          text-white
-        "
+    px-5
+    py-2.5
+    rounded-full
+    text-white
+    font-semibold
+    bg-gradient-to-r
+    from-[#F58529]
+    via-[#DD2A7B]
+    to-[#8134AF]
+    shadow-md
+    hover:scale-105
+    transition-all
+  "
                 >
                   Sign Up
                 </button>
@@ -170,24 +158,33 @@ function Header() {
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="
-      md:hidden
-      p-3
-      rounded-2xl
-      bg-emerald-100
-      text-emerald-700
-      w-12 h-12
-      flex items-center justify-center
-      shadow-sm
-      hover:bg-emerald-200
-      transition-all
-      text-2xl
-      
-    "
+    md:hidden
+    w-11
+    h-11
+    flex
+    items-center
+    justify-center
+    rounded-full
+
+    bg-gradient-to-r
+    from-[#F58529]
+    via-[#DD2A7B]
+    to-[#8134AF]
+
+    text-white
+    shadow-lg
+
+    hover:scale-105
+    active:scale-95
+
+    transition-all
+    duration-300
+  "
             aria-label="Toggle menu"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="w-8 h-8"
+              className="w-6 h-6"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -195,7 +192,7 @@ function Header() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 d={
                   menuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"
                 }
@@ -206,7 +203,18 @@ function Header() {
 
         {/* MOBILE MENU */}
         {menuOpen && (
-          <div className="md:hidden py-4 w-full  border-t border-gray-100 bg-white shadow-xl rounded-b-3xl">
+          <div
+            className="
+      md:hidden
+      py-4
+      w-full
+      border-t
+      border-[#F3E7E2]
+      bg-[#FFF8F6]
+      shadow-xl
+      rounded-b-3xl
+    "
+          >
             <ul className="flex flex-col gap-3 px-4">
               <li>
                 <button
@@ -214,7 +222,21 @@ function Header() {
                     navigate("/");
                     setMenuOpen(false);
                   }}
-                  className="w-full text-center px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 shadow-sm hover:bg-slate-100 transition"
+                  className="
+            w-full
+            text-center
+            px-6
+            py-4
+            rounded-2xl
+            bg-white
+            border
+            border-[#F3E7E2]
+            text-[#2B2B2B]
+            shadow-sm
+            hover:bg-[#FDF1EC]
+            hover:text-[#DD2A7B]
+            transition
+          "
                 >
                   Home
                 </button>
@@ -228,7 +250,21 @@ function Header() {
                         navigate("/all-posts");
                         setMenuOpen(false);
                       }}
-                      className="w-full text-center px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 shadow-sm hover:bg-slate-100 transition"
+                      className="
+                w-full
+                text-center
+                px-6
+                py-4
+                rounded-2xl
+                bg-white
+                border
+                border-[#F3E7E2]
+                text-[#2B2B2B]
+                shadow-sm
+                hover:bg-[#FDF1EC]
+                hover:text-[#DD2A7B]
+                transition
+              "
                     >
                       All Posts
                     </button>
@@ -240,7 +276,21 @@ function Header() {
                         navigate("/settings");
                         setMenuOpen(false);
                       }}
-                      className="w-full text-center px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 shadow-sm hover:bg-slate-100 transition"
+                      className="
+                w-full
+                text-center
+                px-6
+                py-4
+                rounded-2xl
+                bg-white
+                border
+                border-[#F3E7E2]
+                text-[#2B2B2B]
+                shadow-sm
+                hover:bg-[#FDF1EC]
+                hover:text-[#DD2A7B]
+                transition
+              "
                     >
                       Settings
                     </button>
@@ -252,7 +302,22 @@ function Header() {
                         navigate("/add-post");
                         setMenuOpen(false);
                       }}
-                      className="w-full text-center px-6 py-4 rounded-2xl bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 transition"
+                      className="
+                w-full
+                text-center
+                px-6
+                py-4
+                rounded-2xl
+                text-white
+                font-semibold
+                bg-gradient-to-r
+                from-[#F58529]
+                via-[#DD2A7B]
+                to-[#8134AF]
+                shadow-lg
+                hover:opacity-90
+                transition
+              "
                     >
                       Add Post
                     </button>
@@ -264,8 +329,25 @@ function Header() {
                 <>
                   <li>
                     <button
-                      onClick={() => navigate("/login")}
-                      className="w-full text-center px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 shadow-sm hover:bg-slate-100 transition"
+                      onClick={() => {
+                        navigate("/login");
+                        setMenuOpen(false);
+                      }}
+                      className="
+                w-full
+                text-center
+                px-6
+                py-4
+                rounded-2xl
+                bg-white
+                border
+                border-[#F3E7E2]
+                text-[#2B2B2B]
+                shadow-sm
+                hover:bg-[#FDF1EC]
+                hover:text-[#DD2A7B]
+                transition
+              "
                     >
                       Login
                     </button>
@@ -273,8 +355,26 @@ function Header() {
 
                   <li>
                     <button
-                      onClick={() => navigate("/signup")}
-                      className="w-full text-center px-6 py-4 rounded-2xl bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 transition"
+                      onClick={() => {
+                        navigate("/signup");
+                        setMenuOpen(false);
+                      }}
+                      className="
+                w-full
+                text-center
+                px-6
+                py-4
+                rounded-2xl
+                text-white
+                font-semibold
+                bg-gradient-to-r
+                from-[#F58529]
+                via-[#DD2A7B]
+                to-[#8134AF]
+                shadow-lg
+                hover:opacity-90
+                transition
+              "
                     >
                       Sign Up
                     </button>

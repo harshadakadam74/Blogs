@@ -1,10 +1,18 @@
 import { useState, useEffect } from "react";
 import appwriteService from "../appwrite/config";
-import { Container, PostCard } from "../Components";
+import { Button, Container, PostCard } from "../Components";
 import { FileText, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const AllPosts = () => {
-  const categories = ["All", "Technology", "Programming", "AI", "Education"];
+  const categories = [
+    "All",
+    "Technology",
+    "Programming",
+    "AI",
+    "Education",
+    "LifeStyle",
+  ];
   const postsPerPage = 6;
 
   const [posts, setPosts] = useState([]);
@@ -31,20 +39,25 @@ const AllPosts = () => {
     }
 
     const postCategory = post.category || post.categories || "";
-    const normalizedCategory = typeof postCategory === "string"
-      ? postCategory.toLowerCase()
-      : Array.isArray(postCategory)
-        ? postCategory.map((cat) => String(cat).toLowerCase())
-        : [];
+    const normalizedCategory =
+      typeof postCategory === "string"
+        ? postCategory.toLowerCase()
+        : Array.isArray(postCategory)
+          ? postCategory.map((cat) => String(cat).toLowerCase())
+          : [];
 
-    const matchesCategory = typeof normalizedCategory === "string"
-      ? normalizedCategory === selectedCategory.toLowerCase()
-      : normalizedCategory.includes(selectedCategory.toLowerCase());
+    const matchesCategory =
+      typeof normalizedCategory === "string"
+        ? normalizedCategory === selectedCategory.toLowerCase()
+        : normalizedCategory.includes(selectedCategory.toLowerCase());
 
     return matchesSearch && matchesCategory;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredPosts.length / postsPerPage),
+  );
   const currentPosts = filteredPosts.slice(
     (currentPage - 1) * postsPerPage,
     currentPage * postsPerPage,
@@ -52,11 +65,24 @@ const AllPosts = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-linear-to-br from-green-50 to-emerald-100 px-4">
-        <div className="text-center">
-          <div className="w-10 h-10 sm:w-14 sm:h-14 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-sm sm:text-base text-gray-600 font-medium">
-            Loading Posts...
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-yellow-50 px-4">
+        <div className="text-center bg-white/70 backdrop-blur-md px-8 py-10 rounded-3xl shadow-lg border border-pink-100">
+          {/* Spinner */}
+          <div className="relative flex justify-center items-center">
+            <div className="w-14 h-14 border-4 border-pink-300 border-t-transparent rounded-full animate-spin"></div>
+
+            {/* inner glow */}
+            <div className="absolute w-10 h-10 bg-gradient-to-r from-pink-400 via-purple-400 to-orange-400 rounded-full opacity-20 blur-md"></div>
+          </div>
+
+          {/* Text */}
+          <p className="mt-5 text-sm sm:text-base text-gray-600 font-medium">
+            Loading your feed...
+          </p>
+
+          {/* subtle hint */}
+          <p className="mt-1 text-xs text-gray-400">
+            Bringing fresh stories for you...
           </p>
         </div>
       </div>
@@ -64,39 +90,53 @@ const AllPosts = () => {
   }
 
   return (
-    <div className="min-h-screen py-5 sm:py-8 bg-linear-to-br from-green-50 via-white to-emerald-100 text-gray-900">
+    <div className="min-h-screen py-5 sm:py-8 bg-gradient-to-br from-pink-50 via-white to-purple-50 text-gray-900">
       <Container>
         {/* Hero Section */}
-        <div className="text-center mb-8 sm:mb-12 px-4">
+        <div className="text-center mb-10 sm:mb-14 px-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <span className="inline-block px-3 sm:px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 font-semibold text-xs sm:text-sm">
-                 Scriptora Community
+            <div className="w-full">
+              {/* Badge */}
+              <span
+                className="inline-flex items-center px-4 py-2 rounded-full 
+        bg-gradient-to-r from-pink-100 via-purple-100 to-orange-100 
+        text-purple-700 font-semibold text-xs sm:text-sm shadow-sm"
+              >
+                ✨ Scriptora Community
               </span>
 
-              <h1 className="mt-3 text-3xl sm:text-5xl md:text-6xl font-black leading-tight">
-                Explore All Posts
+              {/* Title */}
+              <h1 className="mt-5 text-4xl sm:text-6xl md:text-7xl font-black leading-tight">
+                <span className="bg-black text-transparent bg-clip-text">
+                  Explore Posts
+                </span>
               </h1>
 
-              <p className="mt-3 text-sm sm:text-base max-w-2xl mx-auto">
-                Discover inspiring stories, tutorials, ideas, and insights shared
-                by creators from around the world.
+              {/* Subtitle */}
+              <p className="mt-4 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+                Discover inspiring stories, tutorials, ideas, and insights
+                shared by creators around the world.
               </p>
             </div>
           </div>
         </div>
 
         {/* Search + Categories */}
-        <div className="mb-8 px-4 sm:px-0">
-          <div className="max-w-4xl mx-auto space-y-4">
+        <div className="mb-10 px-4 sm:px-0">
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Label */}
             <div className="text-center">
-              <label className="block text-2xl font-semibold text-gray-600 mb-2" htmlFor="search-posts">
+              <label
+                htmlFor="search-posts"
+                className="block text-2xl font-bold text-gray-700"
+              >
                 Search Posts
               </label>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex-1 min-w-0">
+            {/* Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div className="flex-1">
                 <input
                   id="search-posts"
                   type="text"
@@ -105,44 +145,60 @@ const AllPosts = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  placeholder="Search posts by title..."
-                  className="w-full rounded-3xl border border-slate-200 bg-white px-5 py-4 text-gray-900 shadow-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                  placeholder="Search inspiring stories..."
+                  className="
+            w-full px-5 py-4
+            rounded-full
+            bg-white/70 backdrop-blur-md
+            border border-pink-100
+            shadow-sm
+            outline-none
+            transition
+            focus:ring-4 focus:ring-pink-100
+            focus:border-pink-300
+          "
                 />
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setSearchTerm(searchTerm.trim());
                   setCurrentPage(1);
                 }}
-                className="w-full sm:w-auto rounded-3xl bg-emerald-600 px-6 py-4 text-white font-semibold shadow-sm hover:bg-emerald-700 transition"
+                className="
+          
+         px-6 py-4
+          rounded-full
+          font-semibold
+        "
               >
                 <Search />
-              </button>
+              </Button>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-3">
-  {categories.map((category) => (
-    <button
-      key={category}
-      onClick={() => {
-        setSelectedCategory(category);
-        setCurrentPage(1);
-      }}
-      className={`
-        px-5 py-2 rounded-full font-medium transition
-        ${
-          selectedCategory === category
-            ? "bg-emerald-600 text-white"
-            : "bg-white"
-        }
-      `}
-    >
-      {category}
-    </button>
-  ))}
-</div>
+            {/* Categories */}
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setCurrentPage(1);
+                  }}
+                  className={`
+            px-5 py-2 rounded-full text-sm font-medium transition-all
+            ${
+              selectedCategory === category
+                ? "bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white shadow-md"
+                : "bg-white/70 text-gray-700 border border-pink-100 hover:bg-pink-50"
+            }
+          `}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -150,13 +206,27 @@ const AllPosts = () => {
         {posts.length > 0 ? (
           filteredPosts.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-0">
+              {/* Feed Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-3 sm:px-0">
                 {currentPosts.map((post) => (
                   <div
                     key={post.$id}
-                    className="transition-all duration-300 sm:hover:-translate-y-2 sm:hover:scale-[1.02]"
+                    className="
+              transition-all duration-300
+              hover:-translate-y-1 hover:scale-[1.01]
+            "
                   >
-                    <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-md hover:shadow-xl overflow-hidden">
+                    <div
+                      className="
+                bg-white/70 backdrop-blur-md
+                rounded-3xl
+                shadow-md
+                hover:shadow-2xl
+                border border-pink-100
+                overflow-hidden
+                transition-all duration-300
+              "
+                    >
                       <PostCard
                         $id={post.$id}
                         title={post.title}
@@ -168,24 +238,58 @@ const AllPosts = () => {
                 ))}
               </div>
 
-              <div className="mt-8 flex flex-col gap-3 items-center justify-between rounded-3xl border border-slate-200 bg-white/80 px-4 py-4 text-sm text-slate-700 shadow-sm sm:flex-row">
-                <div>
+              {/* Pagination */}
+              <div
+                className="
+          mt-10
+          flex flex-col sm:flex-row
+          items-center justify-between gap-4
+          rounded-3xl
+          bg-white/70 backdrop-blur-md
+          border border-pink-100
+          px-5 py-4
+          shadow-sm
+          text-sm text-gray-700
+        "
+              >
+                <div className="font-medium">
                   Page {currentPage} of {totalPages}
                 </div>
+
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="
+              px-5 py-2 rounded-full
+              border border-pink-200
+              bg-white
+              hover:bg-pink-50
+              transition
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+            "
                   >
                     Previous
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
                     disabled={currentPage === totalPages}
-                    className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="
+              px-5 py-2 rounded-full
+              bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF]
+              text-white font-medium
+              shadow-md
+              hover:scale-105
+              transition
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+            "
                   >
                     Next
                   </button>
@@ -193,29 +297,83 @@ const AllPosts = () => {
               </div>
             </>
           ) : (
-            <div className="flex flex-col justify-center items-center py-16 sm:py-24 px-4 text-center">
-              <div className="text-5xl sm:text-7xl mb-4"><Search /></div>
+            <div className="flex flex-col justify-center items-center py-20 sm:py-28 px-4 text-center">
+              {/* Icon */}
+              <div className="relative mb-5">
+                <div className="text-6xl sm:text-7xl text-pink-400">
+                  <Search />
+                </div>
 
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-700">
-                No posts match your search or category filter
+                {/* soft glow */}
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-300 via-purple-300 to-orange-300 opacity-20 blur-2xl rounded-full"></div>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-xl sm:text-3xl font-bold text-gray-800">
+                No posts found
               </h2>
 
-              <p className="text-sm sm:text-base text-gray-500 mt-2">
-                Try a different keyword, clear the search box, or choose another category.
+              {/* Subtitle */}
+              <p className="text-sm sm:text-base text-gray-500 mt-3 max-w-md">
+                We couldn’t find anything matching your search or selected
+                category. Try exploring different topics or keywords.
               </p>
+
+              {/* Hint chips */}
+              <div className="flex flex-wrap justify-center gap-2 mt-6">
+                {["Technology", "AI", "Programming", "Education"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="
+          px-4 py-2 text-xs sm:text-sm
+          rounded-full
+          bg-white/70 backdrop-blur-md
+          border border-pink-100
+          text-gray-600
+        "
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           )
         ) : (
-          <div className="flex flex-col justify-center items-center py-16 sm:py-24 px-4 text-center">
-            <div className="text-5xl sm:text-7xl mb-4"><FileText /></div>
+          <div className="flex flex-col justify-center items-center py-20 sm:py-28 px-4 text-center">
+            {/* Icon */}
+            <div className="relative mb-5">
+              <div className="text-6xl sm:text-7xl text-purple-400">
+                <FileText />
+              </div>
 
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-700">
-              No Posts Available
+              {/* glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-300 via-purple-300 to-orange-300 opacity-20 blur-2xl rounded-full"></div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-xl sm:text-3xl font-bold text-gray-800">
+              No posts yet
             </h2>
 
-            <p className="text-sm sm:text-base text-gray-500 mt-2">
-              Be the first one to publish a post.
+            {/* Subtitle */}
+            <p className="text-sm sm:text-base text-gray-500 mt-3 max-w-md">
+              Be the first creator to share a story. Inspire the community with
+              your thoughts, ideas, or tutorials.
             </p>
+
+            {/* CTA hint */}
+            <div className="mt-6">
+              <Link
+                to={`/add-post`}
+                className="
+                 px-6 py-3
+                 rounded-full
+                  font-medium
+               "
+              >
+                <Button>Create First Post</Button>
+              </Link>
+            </div>
           </div>
         )}
       </Container>

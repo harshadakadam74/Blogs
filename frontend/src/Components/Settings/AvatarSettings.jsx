@@ -1,5 +1,6 @@
 import React from "react";
-import { Camera } from "lucide-react";
+import { Camera, Upload } from "lucide-react";
+import Button from "../Button";
 
 function AvatarSettings({
   currentAvatarPreview,
@@ -10,117 +11,116 @@ function AvatarSettings({
   return (
     <div
       id="avatar"
-      className="bg-white rounded-3xl p-8 shadow-lg"
+      className="
+        max-w-3xl mx-auto
+        bg-white
+        rounded-2xl
+        border border-gray-200
+        shadow-sm
+        p-6 md:p-10
+      "
     >
-      <h2 className="text-2xl font-bold mb-6">
-        Profile Picture
+      {/* Header */}
+      <h2 className="text-xl md:text-2xl font-semibold text-center text-gray-800">
+        Edit Profile Photo
       </h2>
 
-      <div className="grid gap-8 md:grid-cols-[220px_1fr] items-center">
-        {/* Avatar Preview */}
-        <div className="flex justify-center">
-          <div className="relative">
-            {currentAvatarPreview ? (
-              <img
-                src={currentAvatarPreview}
-                alt="Avatar"
-                className="
-                  w-44 h-44
-                  rounded-full
-                  object-cover
-                  border-4
-                  border-emerald-100
-                  shadow-xl
-                "
-              />
-            ) : (
-              <div
-                className="
-                  w-44 h-44
-                  rounded-full
-                  bg-emerald-600
-                  text-white
-                  flex
-                  items-center
-                  justify-center
-                  text-5xl
-                  font-bold
-                  shadow-xl
-                "
-              >
-                {userData?.name?.charAt(0)?.toUpperCase() || "S"}
-              </div>
-            )}
+      <p className="text-center text-gray-500 text-sm mt-1">
+        Choose a new profile picture for your account
+      </p>
 
-            <label
+      {/* Avatar Section */}
+      <div className="flex flex-col items-center mt-8">
+        <div className="relative">
+          {currentAvatarPreview ? (
+            <img
+              src={currentAvatarPreview}
+              alt="Avatar"
               className="
-                absolute
-                bottom-2
-                right-2
-                w-12 h-12
+                w-36 h-36 md:w-44 md:h-44
                 rounded-full
-                bg-emerald-600
-                text-white
-                flex items-center
-                justify-center
-                cursor-pointer
-                shadow-lg
-                hover:bg-emerald-700
-                transition
+                object-cover
+                border border-gray-200
+              "
+            />
+          ) : (
+            <div
+              className="
+                w-36 h-36 md:w-44 md:h-44
+                rounded-full
+                bg-gradient-to-br from-gray-100 to-gray-200
+                flex items-center justify-center
+                text-4xl md:text-5xl
+                font-semibold text-gray-600
+                border border-gray-200
               "
             >
-              <Camera size={20} />
+              {userData?.name?.charAt(0)?.toUpperCase() || "U"}
+            </div>
+          )}
 
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarSelect}
-              />
-            </label>
-          </div>
+          {/* Camera Icon */}
+          <label
+            className="
+    absolute bottom-2 right-2
+    w-10 h-10
+    bg-black/80
+    backdrop-blur-md
+    text-white
+    flex items-center justify-center
+    rounded-full
+    cursor-pointer
+    border border-white/20
+    shadow-md
+    hover:scale-105
+    hover:bg-black
+    active:scale-95
+    transition
+  "
+          >
+            <Camera size={16} />
+
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarSelect}
+            />
+          </label>
         </div>
 
-        {/* Upload Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2">
-            Update your profile photo
-          </h3>
+        {/* Upload Box */}
+        <label
+          className="
+            mt-6
+            w-full md:w-[420px]
+            border border-gray-200
+            rounded-xl
+            p-6
+            flex flex-col items-center justify-center
+            cursor-pointer
+            hover:bg-gray-50
+            transition
+          "
+        >
+          <Upload size={28} className="text-gray-600 mb-2" />
 
-          <p className="text-gray-500 mb-6">
-            Upload a clear image. Recommended size:
-            500×500px.
+          <p className="text-sm font-medium text-gray-700">
+            Click to upload photo
           </p>
+
+          <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP up to 5MB</p>
 
           <input
             type="file"
             accept="image/*"
+            className="hidden"
             onChange={handleAvatarSelect}
-            className="
-              w-full
-              border
-              border-gray-200
-              rounded-xl
-              p-3
-              mb-4
-            "
           />
+        </label>
 
-          <button
-            onClick={handleUploadAvatar}
-            className="
-              bg-emerald-600
-              text-white
-              px-6 py-3
-              rounded-xl
-              hover:bg-emerald-700
-              transition
-              font-medium
-            "
-          >
-            Upload Avatar
-          </button>
-        </div>
+        {/* Save Button */}
+        <Button onClick={handleUploadAvatar}>Save Changes</Button>
       </div>
     </div>
   );

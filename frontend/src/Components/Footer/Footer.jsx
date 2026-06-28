@@ -1,55 +1,86 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../index";
+import { Feather } from "lucide-react";
 
 function Footer() {
   return (
     <footer
       className="
-        relative
-        overflow-hidden
-        pt-24
-        sm:pt-28
-        pb-10
-      
+    relative
+    overflow-hidden
+    pt-24
+    sm:pt-28
+    pb-10
 
-        bg-gradient-to-br
-        from-[#d9e8c6]
-        via-[#cfe3b0]
-        to-[#b8d59b]
+    bg-gradient-to-br
+    from-[#3A0D1F]
+    via-[#5A1730]
+    to-[#7A2643]
 
-        dark:from-gray-900
-        dark:via-gray-800
-        dark:to-black
+    text-[#FDF7F3]
 
-        transition-all
-        duration-300
-      "
+    dark:from-[#120812]
+    dark:via-[#1C1020]
+    dark:to-[#090909]
+
+    transition-all
+    duration-300
+  "
     >
-      {/* Background Blur Effects */}
-      <div className="absolute top-10 left-10 w-52 h-52 bg-green-300/30 rounded-full blur-3xl"></div>
+      {/* Top Glow */}
+      <div
+        className="
+    absolute
+    -top-16
+    -left-16
+    w-72
+    h-72
+    rounded-full
+    bg-gradient-to-br
+    from-[#F58529]/25
+    via-[#DD2A7B]/20
+    to-[#8134AF]/15
+    blur-[120px]
+  "
+      ></div>
 
-      <div className="absolute bottom-0 right-0 w-72 h-72 bg-lime-200/30 rounded-full blur-3xl"></div>
+      {/* Bottom Glow */}
+      <div
+        className="
+    absolute
+    -bottom-16
+    -right-16
+    w-80
+    h-80
+    rounded-full
+    bg-gradient-to-tr
+    from-[#8134AF]/20
+    via-[#DD2A7B]/15
+    to-[#F58529]/25
+    blur-[140px]
+  "
+      ></div>
 
-       {/* Wave Design */}
-  <div className="absolute top-0 left-0 w-full overflow-hidden leading-none">
-    <svg
-      className="relative block w-full h-20 sm:h-24 md:h-28"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 1440 320"
-      preserveAspectRatio="none"
-    >
-      <path
-        fill="#ffffff"
-        fillOpacity="1"
-        d="M0,224L48,224C96,224,192,224,288,192C384,160,480,
-        96,576,106.7C672,117,768,203,864,202.7C960,203,1056
-        ,117,1152,90.7C1248,64,1344,96,1392,112L1440,128L1440
-        ,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,
-        0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
-      />
-    </svg>
-  </div>
+      {/* Wave Design */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden leading-none">
+        <svg
+          className="relative block w-full h-20 sm:h-24 md:h-28"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#FFF8F6"
+            fillOpacity="1"
+            d="M0,224L48,224C96,224,192,224,288,192C384,160,480,
+      96,576,106.7C672,117,768,203,864,202.7C960,203,1056
+      ,117,1152,90.7C1248,64,1344,96,1392,112L1440,128L1440
+      ,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,
+      0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          />
+        </svg>
+      </div>
 
       {/* Main Container */}
       <div className="relative z-10 mx-auto max-w-7xl ml-2 px-4">
@@ -65,27 +96,65 @@ function Footer() {
           "
         >
           {/* Logo Section */}
+          {/* Logo Section */}
           <div className="flex flex-col items-center sm:items-start">
             <div
               className="
-                mb-5
-                hover:scale-105
-                duration-300
-                cursor-pointer
-              "
+      flex
+      items-center
+      gap-3
+      mb-5
+      cursor-pointer
+      hover:scale-105
+      transition-all
+      duration-300
+    "
             >
-              <Logo />
+              {/* Logo Icon */}
+              <div
+                className="
+        w-12
+        h-12
+        rounded-2xl
+        bg-gradient-to-br
+        from-[#F58529]
+        via-[#DD2A7B]
+        to-[#8134AF]
+        flex
+        items-center
+        justify-center
+        shadow-lg
+      "
+              >
+                <Feather className="text-white" size={22} />
+              </div>
+
+              {/* Logo Text */}
+              <div>
+                <h1 className="text-3xl font-black leading-none">
+                  <span className="text-white">Script</span>
+                  <span className="bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
+                    ora
+                  </span>
+                </h1>
+
+                <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-white/70">
+                  Share Your Story
+                </p>
+              </div>
             </div>
 
             <p
               className="
-                text-gray-700
-                dark:text-gray-300
-                leading-7
-                max-w-xs
-              "
+      text-[#F3E7E2]
+      leading-7
+      max-w-xs
+    "
             >
-              &copy; Copyright 2026. All Rights Reserved by DevUI.
+              © 2026 <span className="font-semibold">Scriptora</span>.<br />
+              Share Your Story with the world.
+              <br />
+              All Rights Reserved.
             </p>
           </div>
 
@@ -93,13 +162,11 @@ function Footer() {
           <div>
             <h3
               className="
-                tracking-px
-                mb-6
-                text-xl
-                font-bold
-                text-gray-900
-                dark:text-white
-              "
+      mb-6
+      text-xl
+      font-bold
+      text-[#FFF8F6]
+    "
             >
               Company
             </h3>
@@ -107,69 +174,57 @@ function Footer() {
             <ul className="space-y-4">
               <li>
                 <Link
-                  to="/"
+                  to="/about"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#F58529]
+          transition-all
+          duration-300
+        "
                 >
-                  Features
+                  About Us
                 </Link>
               </li>
 
               <li>
                 <Link
-                  to="/"
+                  to="/careers"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#DD2A7B]
+          transition-all
+          duration-300
+        "
                 >
-                  Pricing
+                  Careers
                 </Link>
               </li>
 
               <li>
                 <Link
-                  to="/"
+                  to="/blog"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#8134AF]
+          transition-all
+          duration-300
+        "
                 >
-                  Affiliate Program
+                  Blog
                 </Link>
               </li>
 
               <li>
                 <Link
-                  to="/"
+                  to="/contact"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#F58529]
+          transition-all
+          duration-300
+        "
                 >
-                  Press Kit
+                  Contact
                 </Link>
               </li>
             </ul>
@@ -179,13 +234,11 @@ function Footer() {
           <div>
             <h3
               className="
-                tracking-px
-                mb-6
-                text-xl
-                font-bold
-                text-gray-900
-                dark:text-white
-              "
+      mb-6
+      text-xl
+      font-bold
+      text-[#FFF8F6]
+    "
             >
               Support
             </h3>
@@ -193,50 +246,44 @@ function Footer() {
             <ul className="space-y-4">
               <li>
                 <Link
-                  to="/"
+                  to="/account"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#F58529]
+          transition-all
+          duration-300
+          inline-block
+        "
                 >
-                  Account
+                  My Account
                 </Link>
               </li>
 
               <li>
                 <Link
-                  to="/"
+                  to="/help"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#DD2A7B]
+          transition-all
+          duration-300
+          inline-block
+        "
                 >
-                  Help
+                  Help Center
                 </Link>
               </li>
 
               <li>
                 <Link
-                  to="/"
+                  to="/contact"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#8134AF]
+          transition-all
+          duration-300
+          inline-block
+        "
                 >
                   Contact Us
                 </Link>
@@ -244,18 +291,16 @@ function Footer() {
 
               <li>
                 <Link
-                  to="/"
+                  to="/faq"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#F58529]
+          transition-all
+          duration-300
+          inline-block
+        "
                 >
-                  Customer Support
+                  FAQs
                 </Link>
               </li>
             </ul>
@@ -265,30 +310,26 @@ function Footer() {
           <div>
             <h3
               className="
-                tracking-px
-                mb-6
-                text-xl
-                font-bold
-                text-gray-900
-                dark:text-white
-              "
+      mb-6
+      text-xl
+      font-bold
+      text-[#FFF8F6]
+    "
             >
-              Legals
+              Legal
             </h3>
 
             <ul className="space-y-4">
               <li>
                 <Link
-                  to="/"
+                  to="/terms"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#F58529]
+          transition-all
+          duration-300
+          inline-block
+        "
                 >
                   Terms & Conditions
                 </Link>
@@ -296,16 +337,14 @@ function Footer() {
 
               <li>
                 <Link
-                  to="/"
+                  to="/privacy"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#DD2A7B]
+          transition-all
+          duration-300
+          inline-block
+        "
                 >
                   Privacy Policy
                 </Link>
@@ -313,18 +352,31 @@ function Footer() {
 
               <li>
                 <Link
-                  to="/"
+                  to="/cookies"
                   className="
-                    text-gray-700
-                    dark:text-gray-300
-                    hover:text-green-700
-                    dark:hover:text-lime-400
-                    hover:scale-105
-                    duration-300
-                    inline-block
-                  "
+          text-[#F3E7E2]
+          hover:text-[#8134AF]
+          transition-all
+          duration-300
+          inline-block
+        "
                 >
-                  Licensing
+                  Cookie Policy
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/community-guidelines"
+                  className="
+          text-[#F3E7E2]
+          hover:text-[#F58529]
+          transition-all
+          duration-300
+          inline-block
+        "
+                >
+                  Community Guidelines
                 </Link>
               </li>
             </ul>
@@ -334,67 +386,64 @@ function Footer() {
         {/* Bottom Footer */}
         <div
           className="
-            mt-16
-            pt-6
-            mr-6
-            border-t
-            border-gray-400/50
+    mt-16
+    pt-6
+    border-t
+    border-white/15
+    mr-4
 
-            flex
-            flex-col
-            sm:flex-row
-            justify-between
-            items-center
-            gap-4
-          "
+    flex
+    flex-col
+    sm:flex-row
+    justify-between
+    items-center
+    gap-5
+  "
         >
           <p
             className="
-              text-sm
-              text-gray-700
-              dark:text-gray-400
-              text-center
-            "
+      text-sm
+      text-[#F3E7E2]
+      text-center
+    "
           >
-            © 2026 DevUI. All Rights Reserved.
+            © 2026 <span className="font-semibold">Scriptora</span>. Share Your
+            Story. All Rights Reserved.
           </p>
 
-          <div className="flex gap-6 text-sm ">
+          <div className="flex items-center gap-6 text-sm">
             <Link
-              to="/"
+              to="/privacy"
               className="
-                text-gray-700
-                dark:text-gray-300
-                hover:text-black
-                dark:hover:text-white
-                duration-300
-              "
+        text-[#F3E7E2]
+        hover:text-[#F58529]
+        transition-all
+        duration-300
+      "
             >
               Privacy
             </Link>
 
             <Link
-              to="/"
+              to="/terms"
               className="
-                text-gray-700
-                dark:text-gray-300
-                hover:text-black
-                dark:hover:text-white
-                duration-300
-              "
+        text-[#F3E7E2]
+        hover:text-[#DD2A7B]
+        transition-all
+        duration-300
+      "
             >
               Terms
             </Link>
 
             <Link
-              to="/"
+              to="/cookies"
               className="
-                text-gray-700
-                dark:text-gray-300
-                hover:text-black
-                dark:hover:text-white
-                duration-300
-              "
+        text-[#F3E7E2]
+        hover:text-[#8134AF]
+        transition-all
+        duration-300
+      "
             >
               Cookies
             </Link>

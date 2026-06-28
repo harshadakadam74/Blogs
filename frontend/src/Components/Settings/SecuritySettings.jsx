@@ -1,25 +1,49 @@
 import React from "react";
 import { Shield, KeyRound, Mail, Smartphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function SecuritySettings() {
+  const navigate = useNavigate();
+
   return (
     <div
       id="security"
-      className="bg-white rounded-3xl p-8 shadow-lg"
+      className="
+        max-w-3xl mx-auto
+        bg-white
+        rounded-2xl
+        border border-gray-200
+        shadow-sm
+        p-6 md:p-10
+        mt-10
+      "
     >
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Shield className="text-blue-600" />
+      {/* Header */}
+      <h2 className="text-xl md:text-2xl font-semibold flex items-center gap-2 text-gray-800 mb-8">
+        <Shield className="text-gray-800" />
         Security
       </h2>
 
       <div className="space-y-4">
 
         {/* Change Password */}
-        <div className="flex items-center justify-between p-4 border rounded-2xl">
-          <div className="flex items-center gap-3">
-            <KeyRound className="text-blue-600" />
+        <div
+          className="
+            flex items-center justify-between
+            p-5
+            rounded-xl
+            border border-gray-200
+            hover:bg-gray-50
+            transition
+          "
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-lg bg-gray-100 flex items-center justify-center">
+              <KeyRound className="text-gray-700" size={20} />
+            </div>
+
             <div>
-              <h3 className="font-semibold">
+              <h3 className="font-medium text-gray-800">
                 Change Password
               </h3>
               <p className="text-sm text-gray-500">
@@ -29,13 +53,16 @@ function SecuritySettings() {
           </div>
 
           <button
+            onClick={() => navigate("/change-password")}
             className="
-              bg-blue-600
-              text-white
-              px-5 py-2
-              rounded-xl
-              hover:bg-blue-700
+              px-4 py-2
+             text-sm font-medium
+              text-blue-500
+              hover:text-blue-600
+              active:scale-95
               transition
+              bg-blue-100
+              rounded-xl
             "
           >
             Change
@@ -43,11 +70,23 @@ function SecuritySettings() {
         </div>
 
         {/* Email Verification */}
-        <div className="flex items-center justify-between p-4 border rounded-2xl">
-          <div className="flex items-center gap-3">
-            <Mail className="text-emerald-600" />
+        <div
+          className="
+            flex items-center justify-between
+            p-5
+            rounded-xl
+            border border-gray-200
+            hover:bg-green-50
+            transition
+          "
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Mail className="text-gray-700" size={20} />
+            </div>
+
             <div>
-              <h3 className="font-semibold">
+              <h3 className="font-medium text-gray-800">
                 Email Verification
               </h3>
               <p className="text-sm text-gray-500">
@@ -56,17 +95,37 @@ function SecuritySettings() {
             </div>
           </div>
 
-          <span className="text-emerald-600 font-medium">
+          <span
+            className="
+              px-3 py-1.5
+              rounded-full
+              text-xs font-medium
+              bg-gray-100
+              text-green-500
+            "
+          >
             Verified
           </span>
         </div>
 
         {/* Two Factor Auth */}
-        <div className="flex items-center justify-between p-4 border rounded-2xl">
-          <div className="flex items-center gap-3">
-            <Smartphone className="text-purple-600" />
+        <div
+          className="
+            flex items-center justify-between
+            p-5
+            rounded-xl
+            border border-gray-200
+            hover:bg-blue-50
+            transition
+          "
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Smartphone className="text-gray-700" size={20} />
+            </div>
+
             <div>
-              <h3 className="font-semibold">
+              <h3 className="font-medium text-gray-800">
                 Two-Factor Authentication
               </h3>
               <p className="text-sm text-gray-500">
@@ -77,12 +136,12 @@ function SecuritySettings() {
 
           <button
             className="
-              border
-              border-purple-600
-              text-purple-600
-              px-5 py-2
-              rounded-xl
-              hover:bg-purple-50
+              px-4 py-2
+              border border-gray-300
+              text-blue-500
+              text-sm
+              rounded-lg
+              hover:bg-gray-100
               transition
             "
           >

@@ -12,7 +12,8 @@ const configVariables = {
     appwriteBookmarksCollectionId: String(import.meta.env.VITE_APPWRITE_BOOKMARK_COLLECTION_ID),
     appwriteFollowscCollectionId: String(import.meta.env.VITE_APPWRITE_FOLLOWS_COLLECTION_ID),
     appwriteUsersCollectionId: String(import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID),
-    usersCollectionId: String(import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID)
+    usersCollectionId: String(import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID),
+    appwriteUserSettingsCollectionId: String(import.meta.env.VITE_APPWRITE_USERSETTINGS_COLLECTION_ID)
     
 };
 

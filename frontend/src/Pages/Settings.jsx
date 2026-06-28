@@ -3,28 +3,32 @@ import { useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import appwriteService from "../appwrite/config";
 import authService from "../appwrite/auth";
-import { LogOut, UserPen,Image, LockKeyhole, BellRing, SunMoon, ChartLine, Upload } from "lucide-react";
+import {
+  LogOut,
+  UserPen,
+  Image,
+  LockKeyhole,
+  BellRing,
+  SunMoon,
+  ChartLine,
+} from "lucide-react";
+
+import { LogoutBtn } from "../Components";
 
 function Settings() {
   const userData = useSelector((state) => state.auth.userData);
   const navigate = useNavigate();
 
   const [profileName, setProfileName] = useState("");
-  const [selectedAvatar, setSelectedAvatar] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
-  const currentAvatarPreview =
-    avatarPreview ||
-    (userData?.avatar
-      ? appwriteService.getAvatarPreview(userData.avatar).toString()
-      : null);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [newFollowerAlerts, setNewFollowerAlerts] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
 
   const [totalPosts, setTotalPosts] = useState(0);
   const [likedPosts, setLikedPosts] = useState(0);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
+
+  const [emailNotifications, setEmailNotifications] = useState(false);
+
+  const [newFollowerAlerts, setNewFollowerAlerts] = useState(false);
 
   useEffect(() => {
     if (!userData) return;
@@ -56,26 +60,27 @@ function Settings() {
     };
   }, [userData]);
 
-  const handleAvatarSelect = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setSelectedAvatar(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  };
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const settings = await appwriteService.getNotificationSettings(
+          userData.$id,
+        );
 
-  const handleUploadAvatar = async () => {
-    if (!selectedAvatar || !userData) return;
-
-    try {
-      const uploaded = await appwriteService.uploadAvatar(selectedAvatar);
-      if (uploaded) {
-        await appwriteService.updateUserAvatar(userData.$id, uploaded.$id);
-        window.location.reload();
+        if (settings) {
+          setEmailNotifications(settings.emailNotifications);
+          setNewFollowerAlerts(settings.newFollowerAlerts);
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log("Avatar upload error:", error);
+    };
+
+    if (userData?.$id) {
+      loadSettings();
     }
-  };
+  }, [userData]);
+
 
   const handleSaveProfile = () => {
     window.alert("Profile settings saved.");
@@ -91,143 +96,223 @@ function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-8">Scriptora Settings</h1>
+    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] to-white py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <h1 className="text-2xl font-semibold text-center  text-gray-900 mb-5">
+          {" "}
+          Settings
+        </h1>
 
-        <div className="lg:hidden bg-white rounded-3xl p-4 shadow-lg mb-6">
-          <nav className="flex flex-wrap gap-2">
+        <div className="lg:hidden bg-white rounded-2xl overflow-hidden mx-4 mt-4 shadow-sm">
+          <nav className="divide-y divide-gray-100">
             <Link
               to="/profile"
-              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              className="flex items-center text-center gap-3 active:bg-gray-50 px-4 py-4 text-sm hover:text-pink-700 transition"
             >
               <UserPen size={18} />
               <span>Profile</span>
             </Link>
             <Link
               to="/settings/avatar"
-              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              className="flex items-center text-center gap-3 active:bg-gray-50 px-4 py-4 text-sm hover:text-pink-700 transition"
             >
               <Image size={18} />
               <span>Avatar</span>
             </Link>
             <Link
               to="/settings/security"
-              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              className="flex items-center text-center gap-3 active:bg-gray-50 px-4 py-4 text-sm hover:text-pink-700 transition"
             >
               <LockKeyhole size={18} />
               <span>Security</span>
             </Link>
             <Link
               to="/settings/notifications"
-              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              className="flex items-center text-center gap-3 active:bg-gray-50 px-4 py-4 text-sm hover:text-pink-700 transition"
             >
               <BellRing size={18} />
-              <span>Notifications</span>
+              <span>Notification</span>
             </Link>
             <Link
               to="/settings/appearance"
-              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              className="flex items-center text-center gap-3 active:bg-gray-50 px-4 py-4 text-sm hover:text-pink-700 transition"
             >
               <SunMoon size={18} />
               <span>Appearance</span>
             </Link>
             <Link
               to="/settings/stats"
-              className="flex-1 min-w-30 text-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-emerald-50 hover:text-emerald-600 transition"
+              className="flex items-center text-center gap-3 active:bg-gray-50 px-4 py-4 text-sm hover:text-pink-700 transition"
             >
               <ChartLine size={18} />
               <span>Account Stats</span>
             </Link>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition"
+            >
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
           </nav>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="lg:flex   lg:gap-10">
           {/* Sidebar */}
           <div className="hidden lg:block bg-white rounded-3xl p-6 shadow-lg h-fit lg:sticky lg:top-24">
-            <nav className="space-y-2">
-              <Link
-                to="/profile"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
-              >
-                <UserPen size={18} /> 
-                <span>Profile</span>
-              </Link>
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <nav className="divide-y divide-gray-100">
+                <Link
+                  to={`/profile`}
+                  className="flex items-center gap-3 px-4 py-4 text-sm hover:bg-gray-50"
+                >
+                  <UserPen size={18} />
 
-              <Link
-                to="/settings/avatar"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
-              >
-                <Image size={18} />
-                <span> Avatar </span>
-              </Link>
+                  <span>Profile</span>
+                </Link>
 
-              <Link
-                to="/settings/security"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
-              >
-                <LockKeyhole size={18} />
-                <span>Security</span>
-              </Link>
+                <Link
+                  to={`/settings/avatar`}
+                  className="flex items-center gap-3 px-4 py-4 text-sm hover:bg-gray-50"
+                >
+                  <Image size={18} />
 
-              <Link
-                to="/settings/notifications"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
-              >
-                <BellRing size={18}/>
-                <span>Notifications</span>
-              </Link>
+                  <span>Avatar</span>
+                </Link>
 
-              <Link
-                to="/settings/appearance"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
-              >
-                <SunMoon size={18} />
-                <span>Appearance</span>
-              </Link>
+                <Link
+                  to={`/settings/security`}
+                  className="flex items-center gap-3 px-4 py-4 text-sm hover:bg-gray-50"
+                >
+                  <LockKeyhole size={18} />
 
-              <Link
-                to="/settings/stats"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition"
-              >
-                <ChartLine size={18} />
-                <span>Account Stats</span>
-              </Link>
+                  <span>Security</span>
+                </Link>
 
-              <button
-                onClick={handleLogout}
-                className="w-full text-left flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 hover:text-red-600 transition"
-              >
-                <LogOut size={18} />
-                <span>Logout</span>
-              </button>
-            </nav>
+                <Link
+                  to={`/settings/notifications`}
+                  className="flex items-center gap-3 px-4 py-4 text-sm hover:bg-gray-50"
+                >
+                  <BellRing size={18} />
+
+                  <span>Notifications</span>
+                </Link>
+
+                <Link
+                  to={`/settings/appearance`}
+                  className="flex items-center gap-3 px-4 py-4 text-sm hover:bg-gray-50"
+                >
+                  <SunMoon size={18} />
+
+                  <span>Appearance</span>
+                </Link>
+
+                <Link
+                  to={`/settings/stats`}
+                  className="flex items-center gap-3 px-4 py-4 text-sm hover:bg-gray-50"
+                >
+                  <ChartLine size={18} />
+
+                  <span>Stats</span>
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition"
+                >
+                  <LogOut size={18} />
+
+                  <span>Logout</span>
+                </button>
+              </nav>
+            </div>
           </div>
 
-          {/* Content */}
-          <div className="lg:col-span-3 space-y-6">
-            <div
-              id="profile"
-              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
-            >
-              <h2 className="text-2xl font-bold mb-6">Profile Information</h2>
-              <div className="grid gap-4">
-                <input
-                  type="text"
-                  value={profileName || userData?.name || ""}
-                  onChange={(event) => setProfileName(event.target.value)}
-                  placeholder="Full Name"
-                  className="w-full border rounded-xl p-3"
-                />
-                <input
-                  type="email"
-                  disabled
-                  value={userData?.email || ""}
-                  className="w-full border rounded-xl p-3 mt-4 bg-gray-50"
-                />
+          <div
+            id="profile"
+            className="bg-white border w-full border-gray-200 rounded-xl p-6 scroll-mt-24"
+          >
+            {/* Header */}
+
+            <div className="mb-6">
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <UserPen size={20} className="text-gray-700" />
+
+                <span>Profile Information</span>
+              </h2>
+
+              <p className="text-sm text-gray-500 mt-1">
+                Update your personal information and profile details.
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Full Name
+                  </label>
+
+                  <input
+                    type="text"
+                    value={profileName || userData?.name || ""}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder="Enter your full name"
+                    className="
+          w-full
+          bg-[#fafafa]
+          border border-gray-200
+          rounded-lg
+          px-4 py-3
+          text-sm
+          focus:outline-none
+          focus:border-gray-400
+        "
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Email Address
+                  </label>
+
+                  <input
+                    type="email"
+                    disabled
+                    value={userData?.email || ""}
+                    className="
+          w-full
+          bg-gray-100
+          border border-gray-200
+          rounded-lg
+          px-4 py-3
+          text-sm
+          text-gray-500
+          cursor-not-allowed
+        "
+                  />
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end">
                 <button
                   onClick={handleSaveProfile}
-                  className="mt-5 bg-emerald-600 text-white px-6 py-3 rounded-xl hover:bg-emerald-700 transition"
+                  className="
+       w-full
+        px-5 py-3
+        text-sm font-semibold
+        text-white
+        bg-black
+        rounded-lg
+        hover:bg-gray-900
+        transition
+        mt-3
+      "
                 >
                   Save Changes
                 </button>
@@ -235,163 +320,83 @@ function Settings() {
             </div>
 
             <div
-              id="avatar"
-              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
-            >
-              <div className="grid gap-6 md:grid-cols-[180px_1fr] items-center">
-                <div className="flex flex-col items-center gap-4">
-                  {currentAvatarPreview ? (
-                    <img
-                      src={currentAvatarPreview}
-                      alt="Avatar preview"
-                      className="w-40 h-40 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-40 h-40 rounded-full bg-emerald-600 text-white flex items-center justify-center text-4xl font-bold">
-                      {userData?.name?.charAt(0) || "S"}
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Upload a new avatar
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarSelect}
-                  />
-                 <button
-  onClick={handleUploadAvatar}
-  className="
-    w-full
-    bg-emerald-600
-    text-white
-    font-medium
-    px-6 py-3
-    rounded-xl
-    hover:bg-emerald-700
-    transition
-    flex
-    items-center
-    justify-center
-    gap-2
-  "
->
-  <Upload size={20} />
-  <span>Upload Avatar</span>
-</button>
-                </div>
-              </div>
-            </div>
-
-            <div
-              id="security"
-              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
-            >
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition">
-                Change Password
-              </button>
-            </div>
-
-            <div
-              id="notifications"
-              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
-            >
-              <h2 className="text-2xl font-bold mb-6">Notifications</h2>
-              <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={emailNotifications}
-                  onChange={() => setEmailNotifications((prev) => !prev)}
-                  className="h-5 w-5 rounded border-gray-300 text-emerald-600"
-                />
-                Email Notifications
-              </label>
-              <label className="flex items-center gap-3 mt-4">
-                <input
-                  type="checkbox"
-                  checked={newFollowerAlerts}
-                  onChange={() => setNewFollowerAlerts((prev) => !prev)}
-                  className="h-5 w-5 rounded border-gray-300 text-emerald-600"
-                />
-                New Followers Alerts
-              </label>
-            </div>
-
-            <div
-              id="appearance"
-              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
-            >
-              <h2 className="text-2xl font-bold mb-6">Appearance</h2>
-              <p className="text-gray-600 mb-4">
-                Customize your Scriptora experience.
-              </p>
-              <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={darkMode}
-                  onChange={() => setDarkMode((prev) => !prev)}
-                  className="h-5 w-5 rounded border-gray-300 text-emerald-600"
-                />
-                Dark Mode
-              </label>
-            </div>
-
-            <div
               id="stats"
-              className="bg-white rounded-3xl p-8 shadow-lg scroll-mt-24"
+              className="bg-white border border-gray-200 rounded-xl p-6 scroll-mt-24 mt-6"
             >
-              <h2 className="text-2xl font-bold mb-6">Account Stats</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-3xl border border-gray-200 p-5">
-                  <h3 className="text-sm uppercase text-gray-500">Posts</h3>
-                  <p className="mt-3 text-3xl font-semibold">{totalPosts}</p>
+              {/* Header */}
+
+              <h2 className="text-base font-semibold text-gray-900 mb-4">
+                Account Stats
+              </h2>
+
+              {/* Stats list */}
+
+              <div className="divide-y divide-gray-200">
+                <div className="flex items-center justify-between py-3">
+                  <span className="text-sm text-gray-600">Posts</span>
+
+                  <span className="text-sm font-semibold text-gray-900">
+                    {totalPosts}
+                  </span>
                 </div>
-                <div className="rounded-3xl border border-gray-200 p-5">
-                  <h3 className="text-sm uppercase text-gray-500">
-                    Liked posts
-                  </h3>
-                  <p className="mt-3 text-3xl font-semibold">{likedPosts}</p>
+
+                <div className="flex items-center justify-between py-3">
+                  <span className="text-sm text-gray-600">Liked Posts</span>
+
+                  <span className="text-sm font-semibold text-gray-900">
+                    {likedPosts}
+                  </span>
                 </div>
-                <div className="rounded-3xl border border-gray-200 p-5">
-                  <h3 className="text-sm uppercase text-gray-500">Followers</h3>
-                  <p className="mt-3 text-3xl font-semibold">{followers}</p>
+
+                <div className="flex items-center justify-between py-3">
+                  <span className="text-sm text-gray-600">Followers</span>
+
+                  <span className="text-sm font-semibold text-gray-900">
+                    {followers}
+                  </span>
                 </div>
-                <div className="rounded-3xl border border-gray-200 p-5">
-                  <h3 className="text-sm uppercase text-gray-500">Following</h3>
-                  <p className="mt-3 text-3xl font-semibold">{following}</p>
+
+                <div className="flex items-center justify-between py-3">
+                  <span className="text-sm text-gray-600">Following</span>
+
+                  <span className="text-sm font-semibold text-gray-900">
+                    {following}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 shadow-lg">
-              <h2 className="text-2xl font-bold mb-6">Danger Zone</h2>
-              <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-  onClick={handleLogout}
-  className="
-    group
-    flex items-center
-    gap-2
-    bg-red-600
-    text-white
-    px-4 py-3
-    rounded-xl
-    hover:bg-red-700
-    transition
-  "
->
-  <LogOut size={18} />
+            <div className="bg-white border border-gray-200 rounded-xl p-6">
+              {/* Header */}
 
-  <span className="font-medium">
-    Logout
-  </span>
-</button>
+              <h2 className="text-base font-semibold text-gray-900 mb-4">
+                Danger Zone
+              </h2>
+
+              {/* Actions */}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <LogoutBtn />
+
                 <button
                   onClick={handleDeleteAccount}
-                  className="border border-red-500 font-medium text-red-500 px-6 py-3 rounded-xl hover:bg-red-50 transition"
+                  className="
+
+        px-4 py-4
+
+        text-sm font-medium
+
+        text-red-600
+
+        border border-red-200
+
+        rounded-2xl
+
+        hover:bg-red-50
+
+        transition
+
+      "
                 >
                   Delete Account
                 </button>

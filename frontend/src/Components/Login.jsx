@@ -16,10 +16,10 @@ function Login() {
     setError("");
 
     try {
-     const session = await authService.login({
-  email: data.email,
-  password: data.password,
-}); 
+      const session = await authService.login({
+        email: data.email,
+        password: data.password,
+      });
 
       if (session) {
         const userData = await authService.getCurrentUser();
@@ -36,48 +36,97 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-100 to-green-200 px-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
-        
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="w-24">
-            <Logo width="100%" />
-          </div>
-        </div>
+    <div
+  className="
+    min-h-screen
+    flex
+    items-center
+    justify-center
+    px-4
+    py-8
+    bg-gradient-to-br
+    from-[#FFF5F2]
+    via-[#FFE8F0]
+    to-[#F3E8FF]
+  "
+>
+     <div
+  className="
+    relative
+    w-full
+    max-w-lg
+    rounded-[32px]
+    bg-white/80
+    backdrop-blur-2xl
+    border
+    border-white/60
+    shadow-[0_20px_60px_rgba(221,42,123,0.15)]
+    p-8
+    sm:p-10
+    transition-all
+    duration-300
+    hover:-translate-y-1
+    hover:shadow-[0_30px_80px_rgba(221,42,123,0.25)]
+  "
+>
 
-        {/* Heading */}
-        <h2 className="text-3xl font-bold text-center text-gray-800">
-          Welcome Back
-        </h2>
 
-        <p className="text-center text-gray-500 mt-2">
-          Sign in to your account
-        </p>
+       {/* Heading */}
+<div className="text-center mb-6">
+  <h2
+    className="
+      text-4xl
+      font-black
+      tracking-tight
+      text-gray-900
+    "
+  >
+    Welcome Back
+  </h2>
+
+  <p
+    className="
+      mt-2
+      text-gray-500
+      text-base
+      leading-relaxed
+    "
+  >
+    Sign in to continue sharing your stories with
+    <span className="font-semibold bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
+      {" "}Scriptora
+    </span>
+  </p>
+</div>
 
         {/* Signup Link */}
-        <p className="text-center text-sm mt-4 text-gray-600">
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-green-600 font-semibold hover:underline"
-          >
-            Sign Up
-          </Link>
-        </p>
+<p className="mt-4 text-center text-sm text-gray-500">
+  Don't have an account?{" "}
+  <Link
+    to="/signup"
+    className="
+      font-bold
+      bg-gradient-to-r
+      from-[#F58529]
+      via-[#DD2A7B]
+      to-[#8134AF]
+      bg-clip-text
+      text-transparent
+      hover:brightness-125
+      transition-all
+    "
+  >
+    Sign Up
+  </Link>
+</p>
 
         {/* Error Message */}
         {error && (
-          <p className="mt-4 text-center text-red-500 text-sm">
-            {error}
-          </p>
+          <p className="mt-2 text-center text-red-500 text-sm">{error}</p>
         )}
 
         {/* Form */}
-        <form
-          onSubmit={handleSubmit(login)}
-          className="mt-8 space-y-5"
-        >
+        <form onSubmit={handleSubmit(login)} className="mt-4 space-y-5">
           <Input
             label="Email"
             type="email"
@@ -87,9 +136,8 @@ function Login() {
               required: "Email is required",
               validate: {
                 matchPattern: (value) =>
-                  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(
-                    value
-                  ) || "Please enter a valid email",
+                  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
+                  "Please enter a valid email",
               },
             })}
           />
@@ -103,13 +151,85 @@ function Login() {
               required: "Password is required",
             })}
           />
+          <div className="flex items-center justify-between text-sm mt-2">
+  <label
+    className="
+      flex
+      items-center
+      gap-2
+      text-gray-600
+      cursor-pointer
+      select-none
+    "
+  >
+    <input
+      type="checkbox"
+      className="
+        w-4
+        h-4
+        rounded
+        accent-[#DD2A7B]
+        cursor-pointer
+      "
+    />
+    <span className="hover:text-gray-800 transition-colors">
+      Remember me
+    </span>
+  </label>
+
+  <Link
+    to="/forgot-password"
+    className="
+      font-medium
+      bg-gradient-to-r
+      from-[#F58529]
+      via-[#DD2A7B]
+      to-[#8134AF]
+      bg-clip-text
+      text-transparent
+      hover:brightness-125
+      transition-all
+      duration-300
+    "
+  >
+    Forgot Password?
+  </Link>
+</div>
 
           <Button
             type="submit"
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition duration-300"
+            className="w-full rounded-xl"
           >
             Sign In
           </Button>
+          <div className="flex items-center my-2">
+            <div className="flex-1 border-t border-gray-200"></div>
+            <span className="px-3 text-sm text-gray-400">OR</span>
+            <div className="flex-1 border-t border-gray-200"></div>
+          </div>
+
+          <button
+            className="
+    w-full
+    border
+    border-gray-300
+    rounded-xl
+    py-3
+    flex
+    items-center
+    justify-center
+    gap-3
+    hover:bg-gray-50
+    transition
+  "
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
+            Continue with Google
+          </button>
         </form>
       </div>
     </div>

@@ -6,16 +6,16 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const PostForm = ({ post }) => {
-  const { register, handleSubmit, setValue, control, getValues } =
-    useForm({
-      defaultValues: {
-        title: post?.title || "",
-        slug: post?.slug || "",
-        content: post?.content || "",
-        status: post?.status || "active",
-        category: post?.category || "",
-      },
-    });
+  const { register, handleSubmit, setValue, control, getValues } = useForm({
+    defaultValues: {
+      title: post?.title || "",
+      slug: post?.slug || "",
+      content: post?.content || "",
+      status: post?.status || "active",
+      category: post?.category || "",
+      featured: post?.featured || false,
+    },
+  });
 
   const titleValue = useWatch({ control, name: "title" });
 
@@ -83,67 +83,117 @@ const PostForm = ({ post }) => {
   }, [titleValue, slugTransform, setValue]);
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 py-5">
+    <div className="max-w-6xl mx-auto px-3 sm:px-5 lg:px-8 py-5 rounded-3xl bg-gradient-to-br from-pink-100 via-white to-orange-100 p-[1px]">
       <form
         onSubmit={handleSubmit(submit)}
-        className="flex flex-col lg:flex-row gap-5"
+        className="flex flex-col lg:flex-row gap-4 "
       >
         {/* Left Side */}
-        <div className="w-full lg:w-2/3 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-          <Input
-            label="Title"
-            placeholder="Enter Post Title"
-            className="mb-4"
-            {...register("title", { required: true })}
-          />
+        <div
+          className="
+    w-full lg:w-2/3
+    rounded-3xl
+    border border-[#F3E8E8]
+   bg-white/80 
+    backdrop-blur-2xl
+    shadow-xl
+    p-6 sm:p-8
+    transition-all
+    duration-300
+  "
+        >
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            {post ? "Edit Story " : "Create Story "}
+          </h2>
 
-          <Input
-            label="Slug"
-            placeholder="Enter Post Slug"
-            className="mb-4"
-            {...register("slug", { required: true })}
-            onInput={(e) =>
-              setValue("slug", slugTransform(e.currentTarget.value), {
-                shouldValidate: true,
-              })
-            }
-          />
+          <div className="space-y-6">
+            <Input
+              label="Title"
+              placeholder="Give your story a beautiful title..."
+              {...register("title", { required: true })}
+            />
 
-          <RTE
-            label="Content"
-            name="content"
-            control={control}
-            defaultValue={getValues("content")}
-          />
+            <Input
+              label="Slug"
+              placeholder="story-title"
+              {...register("slug", { required: true })}
+              onInput={(e) =>
+                setValue("slug", slugTransform(e.currentTarget.value), {
+                  shouldValidate: true,
+                })
+              }
+            />
+
+            <div className="rounded-2xl overflow-hidden border border-gray-200">
+              <RTE
+                label="Content"
+                name="content"
+                control={control}
+                defaultValue={getValues("content")}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Right Side */}
-        <div className="w-full lg:w-1/3 bg-white rounded-2xl shadow-lg p-4 sm:p-6 h-fit">
+        <div
+          className="
+    w-full lg:w-1/3
+    rounded-3xl
+    border border-[#F3E8E8]
+   bg-white/80
+    backdrop-blur-2xl
+    shadow-xl
+    p-6
+    h-fit
+  "
+        >
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            {post ? "Update Settings" : "Story Settings"}
+          </h2>
+
           <Input
             label="Featured Image"
             type="file"
             accept="image/png, image/jpg, image/jpeg, image/webp"
-            className="mb-4"
+            className="mb-6"
             {...register("image", {
               required: !post,
             })}
           />
 
           {post && (
-            <div className="mb-4">
+            <div className="mb-6">
               <img
                 src={appwriteService.getFilePreview(post.featuredImage)}
                 alt={post.title}
-                className="w-full h-44 sm:h-56 object-cover rounded-xl shadow-md"
+                className="
+w-full
+aspect-[4/3]
+object-cover
+rounded-2xl
+border
+border-pink-100
+shadow-xl
+hover:scale-[1.02]
+transition-all
+duration-300
+"
               />
             </div>
           )}
 
           <Select
-            options={["Select Category", "Technology", "Programming", "AI", "Education"]}
-            placeholder="Select Category"
+            options={[
+              "Select Category",
+              "Technology",
+              "Programming",
+              "AI",
+              "Education",
+              "LifeStyle",
+            ]}
             label="Category"
-            className="mb-4"
+            className="mb-6"
             {...register("category", {
               required: true,
               validate: (value) => value !== "Select Category",
@@ -153,35 +203,77 @@ const PostForm = ({ post }) => {
           <Select
             options={["active", "inactive"]}
             label="Status"
-            className="mb-4"
+            className="mb-6"
             {...register("status", {
               required: true,
             })}
           />
 
+          <div className="mb-6">
+            <label
+              htmlFor="featured"
+              className="
+        flex
+        items-start
+        gap-4
+        rounded-2xl
+        border
+        border-[#F8D9B8]
+        bg-gradient-to-r
+        from-[#FFF7ED]
+        to-[#FFF1F7]
+        p-4
+        cursor-pointer
+        hover:shadow-md
+        transition-all
+      "
+            >
+              <input
+                type="checkbox"
+                id="featured"
+                {...register("featured")}
+                className="
+          mt-1
+          h-5
+          w-5
+          accent-pink-600
+        "
+              />
+
+              <div>
+                <h4 className="font-semibold text-gray-800">
+                  ⭐ Featured Story
+                </h4>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Display this story in the featured section on the homepage.
+                </p>
+              </div>
+            </label>
+          </div>
+
           <Button
             type="submit"
             className="
-              w-full
-              py-3
-             rounded-xl
-             bg-linear-to-r
-             from-green-500
-             to-emerald-600
-             text-white
-             font-semibold
-             text-lg
-             shadow-lg
-             hover:from-green-600
-             hover:to-emerald-700
-             hover:shadow-xl
-             transform
-             hover:-translate-y-1
-             transition-all
-             duration-300
-             "
+    w-full
+    py-4
+    rounded-full
+    bg-gradient-to-r
+    from-[#F58529]
+    via-[#DD2A7B]
+    to-[#8134AF]
+    text-white
+    font-bold
+    tracking-wide
+    shadow-xl
+    hover:brightness-110
+    hover:shadow-2xl
+    active:scale-95
+    transition-all
+    duration-300
+  "
           >
-            {post ? " Update Post" : " Publish Post"}
+            {post ? "Update Story" : "Publish Story"}
           </Button>
         </div>
       </form>
