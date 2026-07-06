@@ -4,6 +4,7 @@
   "type": "module",
   "main": "src/main.js",
   "dependencies": {
+    "node-appwrite": "^26.2.0",
     "openai": "^6.45.0"
   }
 }
