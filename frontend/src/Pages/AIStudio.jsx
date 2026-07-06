@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../Components";
 import { ArrowRight } from "lucide-react";
-import { askAI } from "../services/ai";
+import { askAIStream } from "../services/ai";
 
 const toolCards = [
   {
@@ -127,24 +127,21 @@ const AIStudio = () => {
     paragraph: "Good",
     complex: "3%",
   });
-  const [aiSuggestion] = useState("React is a powerful JavaScript library for building modern user interfaces.");
   const [history] = useState([
     { time: "10:15", action: "Grammar fixed" },
     { time: "10:20", action: "SEO improved" },
     { time: "10:32", action: "Summary added" },
   ]);
   const [question, setQuestion] = useState("");
-  const [draftContent, setDraftContent] = useState("");
-  const [selectedText, setSelectedText] = useState("");
+  const [draftContent] = useState("");
+  const [selectedText] = useState("");
   const [answer, setAnswer] = useState("");
-  const [conversation, setConversation] = useState([]);
+  const [, setConversation] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [chatError, setChatError] = useState("");
 
   const handleAsk = async () => {
-    if (!question.trim()) {
-      return;
-    }
+    if (!question.trim()) return;
 
     const userMessage = { role: "user", content: question };
     setConversation((prev) => [...prev, userMessage]);
@@ -152,22 +149,30 @@ const AIStudio = () => {
     setChatError("");
     setAnswer("");
 
-    try {
-      const data = await askAI({
-        prompt: question,
-        content: draftContent,
-        title: "",
-        selectedText,
-      });
+    // Streamed response
+    let buffer = "";
+    askAIStream({
+      prompt: question,
+      content: draftContent,
+      title: "",
+      selectedText,
+      onMessage: (chunk) => {
+        // Append chunk to buffer and update UI incrementally
+        buffer += chunk;
+        setAnswer(buffer);
+      },
+      onError: (err) => {
+        setChatError(err.message || "AI stream failed");
+        setIsLoading(false);
+      },
+      onDone: () => {
+        setConversation((prev) => [...prev, { role: "assistant", content: buffer }]);// push final
+        setIsLoading(false);
+      },
+    });
 
-      const aiAnswer = data.answer || data.result || "No response returned.";
-      setAnswer(aiAnswer);
-      setConversation((prev) => [...prev, { role: "assistant", content: aiAnswer }]);
-    } catch (error) {
-      setChatError(error.message || "Failed to connect to AI service.");
-    } finally {
-      setIsLoading(false);
-    }
+    // Optional: auto-cancel after a timeout (safety)
+    // setTimeout(() => controller.abort(), 120000);
   };
 
   return (
