@@ -9,6 +9,7 @@ import {
   Globe,
   Sparkles,
   ArrowRight,
+  Rocket,
 } from "lucide-react";
 
 const Home = () => {
@@ -247,7 +248,7 @@ const Home = () => {
             absolute
             -left-8
             top-16
-            bg-white
+            bg-pink-100
             rounded-2xl
             shadow-lg
             px-5
@@ -262,14 +263,14 @@ const Home = () => {
             absolute
             -right-0
             bottom-12
-            bg-white
+            bg-pink-100
             rounded-2xl
             shadow-lg
             px-5
             py-4
           "
               >
-                🚀 500+ Creators
+                 500+ Creators
               </div>
             </div>
           </div>
@@ -490,13 +491,13 @@ const Home = () => {
                 <button
                   key={post.$id}
                   onClick={() => setActiveStory(index)}
-                  className="flex flex-col items-center flex-shrink-0"
+                  className="flex flex-col items-center mt-2 flex-shrink-0"
                 >
                   <div
                     className={`p-1 rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF]
-            ${activeStory === index ? "scale-110" : ""}`}
+                   ${activeStory === index ? "scale-110" : ""}`}
                   >
-                    <div className="bg-white p-1 rounded-full">
+                    <div className="bg-white p-1 rounded-full ">
                       <img
                         src={appwriteService.getFilePreview(post.featuredImage)}
                         className="w-20 h-20 rounded-full object-cover"
@@ -561,6 +562,7 @@ const Home = () => {
           font-semibold
           "
                 >
+                
                   Read Story →
                 </Link>
               </div>

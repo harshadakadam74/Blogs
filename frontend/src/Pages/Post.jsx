@@ -1,72 +1,92 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import appwriteService from "../appwrite/config";
-import { Button, Container } from "../Components";
+import { Container } from "../Components";
 import parse from "html-react-parser";
 import { useSelector } from "react-redux";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Button } from "../Components/index";
+import {
+  ArrowUp,
+  Bookmark,
+  BookmarkCheck,
+  ExternalLink,
+  Heart,
+  Link2,
+  MessageCircle,
+  MessageSquare,
+  Share2,
+  Users,
+} from "lucide-react";
 
 const Post = () => {
   const [post, setPost] = useState(null);
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
-
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
-
   const [bookmarked, setBookmarked] = useState(false);
-
   const [bookmarkDoc, setBookmarkDoc] = useState(null);
-
   const [followers, setFollowers] = useState(0);
-  const [following, setFollowing] = useState(0);
+  const [following] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followDoc, setFollowDoc] = useState(null);
+  const [relatedPosts, setRelatedPosts] = useState([]);
+  const [authorPostCount, setAuthorPostCount] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [toc, setToc] = useState([]);
+  const [copied, setCopied] = useState(false);
+  const contentRef = useRef(null);
 
   const { slug } = useParams();
   const navigate = useNavigate();
-
   const userData = useSelector((state) => state.auth.userData);
 
-  const isAuthor = post && userData ? post.userId === userData.$id : false;
+  const pageUrl = typeof window !== "undefined" ? window.location.href : "";
 
-  useEffect(() => {
-    if (slug) {
-      appwriteService.getPost(slug).then((post) => {
-        if (post) {
-          setPost(post);
-        } else {
-          navigate("/");
-        }
-      });
-    } else {
-      navigate("/");
-    }
-  }, [slug, navigate]);
+  const excerpt = (text) => {
+    if (!text)
+      return "Explore this story with helpful insights, clean prose, and beautiful visuals.";
+    const plain = text
+      .replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return plain.length > 160 ? `${plain.slice(0, 157)}...` : plain;
+  };
 
-  const deletePost = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this post?",
-    );
-
-    if (!confirmDelete) return;
-
-    const status = await appwriteService.deletePost(post.$id);
-
-    if (status) {
-      await appwriteService.deleteFile(post.featuredImage);
-      navigate("/");
-    }
+  const calculateReadingTime = (text) => {
+    if (!text) return "1 min read";
+    const words = text
+      .replace(/<[^>]+>/g, "")
+      .trim()
+      .split(/\s+/).length;
+    const minutes = Math.max(1, Math.ceil(words / 200));
+    return `${minutes} min read`;
   };
 
   useEffect(() => {
+    if (!slug) {
+      navigate("/");
+      return;
+    }
+
+    appwriteService.getPost(slug).then((response) => {
+      if (response) {
+        setPost(response);
+      } else {
+        navigate("/");
+      }
+    });
+  }, [slug, navigate]);
+
+  useEffect(() => {
     if (!post) return;
+
+    window.scrollTo({ top: 0, behavior: "instant" });
 
     let isMounted = true;
 
     const fetchLikes = async () => {
       const likesData = await appwriteService.getPostLikes(post.$id);
-
       if (!isMounted) return;
       setLikes(likesData?.documents?.length ?? 0);
 
@@ -75,7 +95,6 @@ const Post = () => {
           post.$id,
           userData.$id,
         );
-
         if (!isMounted) return;
         setLiked(userLike?.documents?.length > 0);
       } else {
@@ -83,148 +102,96 @@ const Post = () => {
       }
     };
 
+    const fetchComments = async () => {
+      const commentData = await appwriteService.getComments(post.$id);
+      if (!isMounted) return;
+      setComments(commentData?.documents ?? []);
+    };
+
+    const fetchRelatedPosts = async () => {
+      const postsData = await appwriteService.getPosts();
+      if (!isMounted || !postsData?.documents) return;
+      const related = postsData.documents
+        .filter(
+          (item) => item.$id !== post.$id && item.category === post.category,
+        )
+        .slice(0, 3);
+      setRelatedPosts(related);
+    };
+
+    const fetchAuthorPostCount = async () => {
+      if (!post.userId) return;
+      const postsByAuthor = await appwriteService.getPostsByUser(post.userId);
+      if (!isMounted) return;
+      setAuthorPostCount(postsByAuthor?.documents?.length ?? 0);
+    };
+
     fetchLikes();
+    fetchComments();
+    fetchRelatedPosts();
+    fetchAuthorPostCount();
+
     return () => {
       isMounted = false;
     };
   }, [post, userData]);
 
-  const handleLike = async () => {
-    if (!userData) return;
-
-    if (!liked) {
-      await appwriteService.addLike(post.$id, userData.$id);
-
-      setLiked(true);
-      setLikes((prev) => prev + 1);
-    } else {
-      const userLike = await appwriteService.getUserLike(
-        post.$id,
-        userData.$id,
-      );
-
-      if (userLike.documents && userLike.documents.length > 0) {
-        await appwriteService.removeLike(userLike.documents[0].$id);
+  useEffect(() => {
+    if (!post || !contentRef.current) return;
+    const headings = Array.from(
+      contentRef.current.querySelectorAll("h2, h3, h4"),
+    );
+    const extracted = headings.map((heading) => {
+      if (!heading.id) {
+        heading.id = heading.textContent
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9\-]/g, "");
       }
-
-      setLiked(false);
-      setLikes((prev) => prev - 1);
-    }
-  };
+      return {
+        id: heading.id,
+        text: heading.textContent,
+        level: Number(heading.tagName.substring(1)),
+      };
+    });
+    setToc(extracted);
+  }, [post, comments]);
 
   useEffect(() => {
-    if (!post) return;
+    if (!post || !contentRef.current) return;
 
-    let isMounted = true;
-
-    const fetchComments = async () => {
-      const data = await appwriteService.getComments(post.$id);
-      if (!isMounted) return;
-
-      if (data) {
-        setComments(data.documents);
-      }
+    const updateProgress = () => {
+      const article = contentRef.current;
+      const top = article.getBoundingClientRect().top + window.scrollY - 140;
+      const height = article.offsetHeight;
+      const scroll = window.scrollY - top;
+      const percent = Math.round(
+        (scroll / (height - window.innerHeight + 220)) * 100,
+      );
+      setProgress(Math.min(100, Math.max(0, percent)));
     };
 
-    fetchComments();
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
     return () => {
-      isMounted = false;
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
     };
   }, [post]);
 
-  const handleComment = async () => {
-    if (!comment.trim()) return;
-
-    const newComment = await appwriteService.addComment({
-      postId: post.$id,
-      userId: userData.$id,
-      authorName: userData.name,
-      comment,
-    });
-
-    if (newComment) {
-      setComments((prev) => [...prev, newComment]);
-
-      setComment("");
-    }
-  };
-
   useEffect(() => {
-    if (!userData || !post) return;
+    if (!post || !userData) return;
 
     let isMounted = true;
 
-    const checkFollow = async () => {
-      try {
-        const res = await appwriteService.getFollow(userData.$id, post.userId);
-
-        if (!isMounted) return;
-
-        if (res?.documents?.length > 0) {
-          setIsFollowing(true);
-          setFollowDoc(res.documents[0].$id);
-        } else {
-          setIsFollowing(false);
-          setFollowDoc(null);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    const fetchFollowCounts = async () => {
-      try {
-        const followersRes = await appwriteService.getFollowers(post.userId);
-        const followingRes = await appwriteService.getFollowing(post.userId);
-
-        if (!isMounted) return;
-
-        setFollowers(followersRes?.documents?.length ?? 0);
-        setFollowing(followingRes?.documents?.length ?? 0);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    checkFollow();
-    fetchFollowCounts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [userData, post]);
-
-  const handleFollow = async () => {
-    if (!userData || !post) return;
-
-    if (isFollowing) {
-      if (followDoc) {
-        await appwriteService.unfollowUser(followDoc);
-      }
-      setIsFollowing(false);
-      setFollowDoc(null);
-      setFollowers((prev) => Math.max(prev - 1, 0));
-    } else {
-      const doc = await appwriteService.followUser(userData.$id, post.userId);
-
-      if (doc) {
-        setFollowDoc(doc.$id);
-        setIsFollowing(true);
-        setFollowers((prev) => prev + 1);
-      }
-    }
-  };
-
-  useEffect(() => {
     const checkBookmark = async () => {
-      if (!post || !userData) return;
-
       try {
         const res = await appwriteService.getUserBookmark(
           post.$id,
           userData.$id,
         );
-
+        if (!isMounted) return;
         if (res.documents.length > 0) {
           setBookmarked(true);
           setBookmarkDoc(res.documents[0].$id);
@@ -237,69 +204,107 @@ const Post = () => {
       }
     };
 
-    const loadBookmark = async () => {
-      if (post && userData) {
-        await checkBookmark();
-      }
-    };
+    checkBookmark();
 
-    loadBookmark();
+    return () => {
+      isMounted = false;
+    };
   }, [post, userData]);
+
+  const handleLike = async () => {
+    if (!userData) return;
+    if (!liked) {
+      await appwriteService.addLike(post.$id, userData.$id);
+      setLiked(true);
+      setLikes((prev) => prev + 1);
+    } else {
+      const userLike = await appwriteService.getUserLike(
+        post.$id,
+        userData.$id,
+      );
+      if (userLike.documents?.length > 0) {
+        await appwriteService.removeLike(userLike.documents[0].$id);
+      }
+      setLiked(false);
+      setLikes((prev) => Math.max(prev - 1, 0));
+    }
+  };
 
   const handleBookmark = async () => {
     if (!userData) return;
-
     if (bookmarked) {
       await appwriteService.removeBookmark(bookmarkDoc);
-
       setBookmarked(false);
       setBookmarkDoc(null);
     } else {
-      const doc = await appwriteService.addBookmark(post.$id, userData.$id);
-
+      const bookmark = await appwriteService.addBookmark(
+        post.$id,
+        userData.$id,
+      );
       setBookmarked(true);
-      setBookmarkDoc(doc.$id);
+      setBookmarkDoc(bookmark.$id);
     }
+  };
+
+  const handleFollow = async () => {
+    if (!userData || !post) return;
+    if (isFollowing) {
+      if (followDoc) {
+        await appwriteService.unfollowUser(followDoc);
+      }
+      setIsFollowing(false);
+      setFollowDoc(null);
+      setFollowers((prev) => Math.max(prev - 1, 0));
+    } else {
+      const doc = await appwriteService.followUser(userData.$id, post.userId);
+      if (doc) {
+        setFollowDoc(doc.$id);
+        setIsFollowing(true);
+        setFollowers((prev) => prev + 1);
+      }
+    }
+  };
+
+  const handleComment = async () => {
+    if (!comment.trim() || !userData) return;
+    const newComment = await appwriteService.addComment({
+      postId: post.$id,
+      userId: userData.$id,
+      authorName: userData.name,
+      comment,
+    });
+    if (newComment) {
+      setComments((prev) => [...prev, newComment]);
+      setComment("");
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(pageUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2200);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const scrollToHeading = (id) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    window.scrollTo({
+      top: element.getBoundingClientRect().top + window.scrollY - 100,
+      behavior: "smooth",
+    });
   };
 
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-purple-50 relative overflow-hidden">
-        {/* Background Glow */}
         <div className="absolute -top-32 -left-24 w-80 h-80 rounded-full bg-pink-300/30 blur-3xl"></div>
         <div className="absolute bottom-0 -right-20 w-96 h-96 rounded-full bg-orange-300/20 blur-3xl"></div>
-
-        <div
-          className="
-          relative
-          bg-white/80
-          backdrop-blur-xl
-          border
-          border-white/50
-          shadow-2xl
-          rounded-[32px]
-          px-10
-          py-12
-          text-center
-        "
-        >
-          {/* Instagram Gradient Spinner */}
-          <div
-            className="
-            w-16
-            h-16
-            rounded-full
-            border-[5px]
-            border-transparent
-            border-t-[#F58529]
-            border-r-[#DD2A7B]
-            border-b-[#8134AF]
-            animate-spin
-            mx-auto
-          "
-          ></div>
-
-          {/* Logo */}
+        <div className="relative bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[32px] px-10 py-12 text-center">
+          <div className="w-16 h-16 rounded-full border-[5px] border-transparent border-t-[#F58529] border-r-[#DD2A7B] border-b-[#8134AF] animate-spin mx-auto"></div>
           <div className="mt-6">
             <img
               src="/logo.png"
@@ -307,16 +312,12 @@ const Post = () => {
               className="w-14 h-14 mx-auto rounded-2xl shadow-lg"
             />
           </div>
-
           <h2 className="mt-6 text-2xl font-black bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
             Loading Story...
           </h2>
-
           <p className="mt-3 text-gray-500">
             Preparing your article for reading.
           </p>
-
-          {/* Loading Dots */}
           <div className="flex justify-center gap-2 mt-6">
             <span className="w-3 h-3 rounded-full bg-pink-500 animate-bounce"></span>
             <span
@@ -334,730 +335,464 @@ const Post = () => {
   }
 
   return (
-   <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-white via-[#FFF5F8] to-[#FFF1E8]">
-
-  {/* Pink Glow */}
-  <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-pink-400/20 blur-[140px]" />
-
-  {/* Orange Glow */}
-  <div className="absolute top-20 right-0 w-[450px] h-[450px] rounded-full bg-orange-300/20 blur-[140px]" />
-
-  {/* Purple Glow */}
-  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-purple-300/20 blur-[160px]" />
-
-  {/* Light Grid */}
-  <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px] opacity-40" />
+    <div className="relative min-h-screen bg-gradient-to-br from-white via-[#FFF5F8] to-[#FFF1E8] pb-24">
+      <div className="fixed inset-x-0 top-0 h-1 z-50 bg-slate-200/60">
+        <div
+          className="h-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] transition-all duration-200"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(251,207,232,0.45),_transparent_40%)] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[540px] h-[540px] rounded-full bg-purple-200/40 blur-[160px] pointer-events-none" />
       <Container>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          {/* Cover Image */}
-          <div className="relative overflow-hidden rounded-[36px] shadow-2xl group">
-            <img
-              src={
-                post.featuredImage
-                  ? appwriteService
-                      .getFilePreview(post.featuredImage)
-                      .toString()
-                  : "/placeholder.jpg"
-              }
-              alt={post.title}
-              className="
-      w-full
-      h-[320px]
-      md:h-[600px]
-      object-cover
-      transition-all
-      duration-700
-      group-hover:scale-105
-    "
-            />
-
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-
-            {/* Category */}
-            <div className="absolute top-6 left-6 z-20">
-              <span className="px-4 py-2 rounded-full bg-white/15 backdrop-blur-xl border border-white/20 text-white text-sm font-semibold">
-                📚 {post.category}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <section className="relative overflow-hidden rounded-[40px] border border-pink-100 bg-white/95 shadow-2xl py-10 px-6 sm:px-10 md:p-14 mb-10">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(253,224,220,0.8),_transparent_28%)] opacity-70 pointer-events-none" />
+            <div className="relative z-10 space-y-7">
+              <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FCE7F3] via-[#FDE68A] to-[#FED7AA] px-4 py-2 text-sm font-semibold text-pink-700 shadow-sm">
+                {post.category || "AI"}
               </span>
-            </div>
-
-            {/* Like + Bookmark */}
-            <div className="absolute top-6 right-6 flex gap-3 z-20">
-              <button
-                onClick={handleLike}
-                className="
-        w-12 h-12
-        rounded-full
-        bg-white/15
-        backdrop-blur-xl
-        border border-white/20
-        flex items-center justify-center
-        hover:scale-110
-        transition
-      "
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill={liked ? "#ef4444" : "white"}
-                  stroke="white"
-                  strokeWidth="2"
-                >
-                  <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
-                </svg>
-              </button>
-
-              <button
-                onClick={handleBookmark}
-                className="
-        w-12 h-12
-        rounded-full
-        bg-white/15
-        backdrop-blur-xl
-        border border-white/20
-        flex items-center justify-center
-        hover:scale-110
-        transition
-      "
-              >
-                {bookmarked ? (
-                  <BookmarkCheck className="text-yellow-300" size={22} />
-                ) : (
-                  <Bookmark className="text-white" size={22} />
-                )}
-              </button>
-            </div>
-
-            {/* Edit/Delete */}
-            {isAuthor && (
-              <div className="absolute top-20 right-6 flex gap-3 z-20">
-                <Link to={`/edit-post/${post.$id}`}>
-                  <button className="px-5 py-2 rounded-full bg-green-500 text-white hover:bg-green-600 transition">
-                    ✏️ Edit
-                  </button>
-                </Link>
-
-                <button
-                  onClick={deletePost}
-                  className="px-5 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
-                >
-                  🗑 Delete
-                </button>
-              </div>
-            )}
-
-            {/* Bottom Info */}
-            <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
-              {/* Author */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-white text-2xl font-bold shadow-xl">
-                  {(post.authorName || "S").charAt(0).toUpperCase()}
-                </div>
-
-                <div>
-                  <h3 className="text-white text-xl font-bold">
-                    {post.authorName || "Scriptora"}
-                  </h3>
-
-                  <p className="text-white/80 text-sm">
-                    Published on{" "}
-                    {new Date(post.$createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="hidden md:flex gap-3">
-                <div className="bg-white/15 backdrop-blur-xl rounded-full px-5 py-3 text-white text-sm">
-                  ❤️ {post.likesCount || 0}
-                </div>
-
-                <div className="bg-white/15 backdrop-blur-xl rounded-full px-5 py-3 text-white text-sm">
-                  🔖 Saved
-                </div>
-
-                <div className="bg-white/15 backdrop-blur-xl rounded-full px-5 py-3 text-white text-sm">
-                  📖 5 min read
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 rounded-[32px] bg-white/90 backdrop-blur-xl border border-pink-100 shadow-2xl p-6 sm:p-10 lg:p-14">
-            {/* Content */}
-            <div
-              className="
-    prose
-    prose-base
-    lg:prose-lg
-    xl:prose-xl
-    max-w-none
-
-    prose-headings:font-black
-    prose-headings:text-gray-900
-    prose-headings:scroll-mt-24
-
-    prose-p:text-gray-700
-    prose-p:leading-8
-
-    prose-a:text-[#DD2A7B]
-    prose-a:font-semibold
-    prose-a:no-underline
-    hover:prose-a:text-[#8134AF]
-
-    prose-strong:text-gray-900
-
-    prose-blockquote:border-l-4
-    prose-blockquote:border-[#DD2A7B]
-    prose-blockquote:bg-pink-50
-    prose-blockquote:rounded-r-xl
-    prose-blockquote:px-6
-    prose-blockquote:py-3
-    prose-blockquote:italic
-
-    prose-code:bg-gray-100
-    prose-code:px-2
-    prose-code:py-1
-    prose-code:rounded-md
-    prose-code:text-pink-600
-    prose-code:before:content-none
-    prose-code:after:content-none
-
-    prose-pre:bg-gray-900
-    prose-pre:text-gray-100
-    prose-pre:rounded-2xl
-    prose-pre:shadow-lg
-
-    prose-ul:marker:text-[#DD2A7B]
-    prose-ol:marker:text-[#DD2A7B]
-
-    prose-img:rounded-3xl
-    prose-img:shadow-xl
-    prose-img:border
-    prose-img:border-gray-100
-
-    prose-hr:border-pink-100
-  "
-            >
-              {parse(post.content)}
-            </div>
-
-            {/* Comments Section */}
-            <div className="mt-16 border-t border-pink-100 pt-12">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-3xl font-black text-gray-900">
-                    💬 Discussion
-                  </h2>
-
-                  <p className="text-gray-500 mt-1">
-                    {comments.length}{" "}
-                    {comments.length === 1 ? "Comment" : "Comments"}
-                  </p>
-                </div>
-
-                <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-pink-100 text-[#DD2A7B] font-semibold">
-                  ❤️ Community
-                </div>
-              </div>
-
-              {/* Comment Box */}
-              <div className="bg-gradient-to-br from-pink-50 via-white to-purple-50 rounded-[30px] border border-pink-100 shadow-lg p-6">
-                <div className="flex gap-4">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {(userData?.name || "S").charAt(0).toUpperCase()}
-                  </div>
-
-                  <div className="flex-1">
-                    <textarea
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      rows={4}
-                      placeholder="Share your thoughts..."
-                      className="
-            w-full
-            rounded-2xl
-            border
-            border-pink-100
-            bg-white
-            p-4
-            resize-none
-            outline-none
-            focus:ring-2
-            focus:ring-pink-500
-          "
-                    />
-
-                    <div className="flex justify-end mt-4">
-                      <button
-                        onClick={handleComment}
-                        className="
-              px-8
-              py-3
-              rounded-full
-              bg-gradient-to-r
-              from-[#F58529]
-              via-[#DD2A7B]
-              to-[#8134AF]
-              text-white
-              font-semibold
-              shadow-lg
-              hover:scale-105
-              transition-all
-            "
-                      >
-                        Post Comment 🚀
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Comments List */}
-              <div className="space-y-6 mt-10">
-                {comments.length > 0 ? (
-                  comments.map((item) => (
-                    <div
-                      key={item.$id}
-                      className="
-            bg-white
-            rounded-[28px]
-            border
-            border-gray-100
-            shadow-md
-            hover:shadow-xl
-            transition-all
-            p-6
-          "
-                    >
-                      <div className="flex gap-4">
-                        {/* Avatar */}
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                          {item.authorName?.charAt(0).toUpperCase()}
-                        </div>
-
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-bold text-gray-900">
-                                {item.authorName}
-                              </h4>
-
-                              <p className="text-xs text-gray-500 mt-1">
-                                {new Date(item.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-
-                            <button className="text-gray-400 hover:text-red-500 transition text-xl">
-                              ❤️
-                            </button>
-                          </div>
-
-                          <p className="mt-4 text-gray-700 leading-7">
-                            {item.comment}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="bg-white rounded-[30px] border border-pink-100 shadow-md py-16 text-center">
-                    <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-4xl text-white">
-                      💬
-                    </div>
-
-                    <h3 className="mt-6 text-2xl font-bold">No comments yet</h3>
-
-                    <p className="mt-3 text-gray-500">
-                      Be the first to share your thoughts.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Article Meta */}
-            <div className="flex flex-wrap items-center gap-3 mb-8">
-              {/* Category */}
-              <span
-                className="
-      px-4 py-2
-      rounded-full
-      bg-gradient-to-r
-      from-[#F58529]
-      via-[#DD2A7B]
-      to-[#8134AF]
-      text-white
-      text-sm
-      font-semibold
-      shadow-md
-    "
-              >
-                📚 {post.category || "Blog"}
-              </span>
-
-              {/* Date */}
-              <span
-                className="
-      px-4 py-2
-      rounded-full
-      bg-white
-      border
-      border-gray-200
-      text-gray-600
-      text-sm
-      font-medium
-      shadow-sm
-    "
-              >
-                📅{" "}
-                {new Date(post.$createdAt || Date.now()).toLocaleDateString(
-                  "en-US",
-                  {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  },
-                )}
-              </span>
-
-              {/* Read Time */}
-              <span
-                className="
-      px-4 py-2
-      rounded-full
-      bg-white
-      border
-      border-gray-200
-      text-gray-600
-      text-sm
-      font-medium
-      shadow-sm
-    "
-              >
-                ⏱️ 5 min read
-              </span>
-
-              {/* Featured Badge */}
-              {post.featured && (
-                <span
-                  className="
-        px-4 py-2
-        rounded-full
-        bg-yellow-100
-        text-yellow-700
-        text-sm
-        font-semibold
-      "
-                >
-                  ⭐ Featured
-                </span>
-              )}
-            </div>
-            {/* Title */}
-            <div className="mb-8">
-              <span className="uppercase tracking-[0.3em] text-xs font-bold text-[#DD2A7B]">
-                SCRIPTORA STORY
-              </span>
-
-              <h1
-                className="
-      mt-3
-      text-4xl
-      md:text-5xl
-      lg:text-6xl
-      font-extrabold
-      leading-tight
-      bg-gradient-to-r
-      from-gray-900
-      via-gray-800
-      to-gray-600
-      bg-clip-text
-      text-transparent
-    "
-              >
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900">
                 {post.title}
               </h1>
-
-              <div className="flex items-center gap-3 mt-6">
-                <div className="w-16 h-1 rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF]" />
-                <div className="w-2 h-2 rounded-full bg-[#DD2A7B]" />
+              <p className="max-w-3xl text-lg leading-8 text-slate-600">
+                {excerpt(post.content)}
+              </p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white text-xl font-bold shadow-lg">
+                    {(post.authorName || "S").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      {post.authorName || "Scriptora"}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      {new Date(post.$createdAt).toLocaleDateString("en-US", {
+                        month: "long",
+                        year: "numeric",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                    <Heart className="h-4 w-4 text-pink-500" /> {likes} Likes
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />{" "}
+                    {calculateReadingTime(post.content)}
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                    <Users className="h-4 w-4 text-slate-500" />{" "}
+                    {post.views
+                      ? `${post.views.toLocaleString()} views`
+                      : "2.3K views"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
+                <button
+                  onClick={handleLike}
+                  className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${liked ? "bg-pink-600 text-white shadow-lg" : "bg-white text-slate-800 border border-slate-200 hover:bg-pink-50"}`}
+                >
+                  <Heart className="h-4 w-4" /> {liked ? "Liked" : "Like"}
+                </button>
+                <button
+                  onClick={handleBookmark}
+                  className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${bookmarked ? "bg-emerald-500 text-white shadow-lg" : "bg-white text-slate-800 border border-slate-200 hover:bg-slate-50"}`}
+                >
+                  {bookmarked ? (
+                    <BookmarkCheck className="h-4 w-4" />
+                  ) : (
+                    <Bookmark className="h-4 w-4" />
+                  )}{" "}
+                  {bookmarked ? "Saved" : "Bookmark"}
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                >
+                  <Link2 className="h-4 w-4" />{" "}
+                  {copied ? "Link Copied" : "Copy Link"}
+                </button>
               </div>
             </div>
-
-            {/* Author Card */}
-            <div
-              className="
-    mb-8
-    rounded-3xl
-    bg-white
-    border
-    border-gray-100
-    shadow-lg
-    p-5
-    flex
-    flex-col
-    md:flex-row
-    md:items-center
-    md:justify-between
-    gap-6
-  "
-            >
-              {/* Left */}
-              <div className="flex items-center gap-4">
-                {/* Avatar */}
-                <div className="relative">
-                  {post.author?.avatar ? (
-                    <img
-                      src={appwriteService
-                        .getAvatarPreview(post.author.avatar)
-                        .toString()}
-                      alt={post.authorName}
-                      className="
-            w-16
-            h-16
-            rounded-full
-            object-cover
-            ring-4
-            ring-pink-100
-          "
-                    />
-                  ) : (
-                    <div
-                      className="
-            w-16
-            h-16
-            rounded-full
-            bg-gradient-to-r
-            from-[#F58529]
-            via-[#DD2A7B]
-            to-[#8134AF]
-            flex
-            items-center
-            justify-center
-            text-white
-            text-2xl
-            font-bold
-            ring-4
-            ring-pink-100
-          "
+          </section>
+         <section className="mb-10 overflow-hidden rounded-[36px] shadow-2xl bg-black">
+  <img
+    src={
+      post.featuredImage
+        ? appwriteService.getFilePreview(post.featuredImage).toString()
+        : "/placeholder.jpg"
+    }
+    alt={post.title}
+    loading="lazy"
+    className="w-full max-h-[450px] object-contain"
+  />
+</section>
+          <div className="lg:grid lg:grid-cols-[1.75fr_0.85fr] gap-10">
+            <article className="space-y-10">
+              <div className="rounded-[32px] bg-white/95 border border-pink-100 shadow-xl p-6 sm:p-8">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                      Featured article
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black text-slate-900">
+                      Read the story with a modern layout built for comfort.
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div className="rounded-3xl bg-slate-50 p-4 text-center">
+                      <p className="text-sm text-slate-500">Words</p>
+                      <p className="mt-2 text-lg font-bold text-slate-900">
+                        {post.content
+                          ?.replace(/<[^>]+>/g, "")
+                          .split(/\s+/)
+                          .filter(Boolean).length ?? 0}
+                      </p>
+                    </div>
+                    <div className="rounded-3xl bg-slate-50 p-4 text-center">
+                      <p className="text-sm text-slate-500">Comments</p>
+                      <p className="mt-2 text-lg font-bold text-slate-900">
+                        {comments.length}
+                      </p>
+                    </div>
+                    <div className="rounded-3xl bg-slate-50 p-4 text-center">
+                      <p className="text-sm text-slate-500">Author</p>
+                      <p className="mt-2 text-lg font-bold text-slate-900">
+                        {post.authorName || "Scriptora"}
+                      </p>
+                    </div>
+                    <div className="rounded-3xl bg-slate-50 p-4 text-center">
+                      <p className="text-sm text-slate-500">Read time</p>
+                      <p className="mt-2 text-lg font-bold text-slate-900">
+                        {calculateReadingTime(post.content)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  ref={contentRef}
+                  className="prose prose-lg prose-slate max-w-none mt-10"
+                >
+                  {parse(post.content)}
+                </div>
+              </div>
+              <section className="grid gap-6 lg:grid-cols-2">
+                <div className="rounded-[32px] bg-white border border-pink-100 shadow-xl p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                        Author
+                      </p>
+                      <h3 className="mt-3 text-2xl font-black text-slate-900">
+                        {post.authorName || "Scriptora Kadam"}
+                      </h3>
+                    </div>
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                      {(post.authorName || "S").charAt(0).toUpperCase()}
+                    </div>
+                  </div>
+                  <p className="mt-5 text-slate-600 leading-7">
+                    A passionate frontend writer who loves sharing clear,
+                    actionable tutorials and product design stories.
+                  </p>
+                  <div className="mt-6 grid gap-3 text-sm text-slate-700">
+                    <div className="flex items-center justify-between rounded-3xl bg-slate-50 px-4 py-4">
+                      <span>Posts</span>
+                      <strong>{authorPostCount}</strong>
+                    </div>
+                    <div className="flex items-center justify-between rounded-3xl bg-slate-50 px-4 py-4">
+                      <span>Followers</span>
+                      <strong>{followers}</strong>
+                    </div>
+                    <div className="flex items-center justify-between rounded-3xl bg-slate-50 px-4 py-4">
+                      <span>Following</span>
+                      <strong>{following}</strong>
+                    </div>
+                  </div>
+                  {userData && post.userId !== userData.$id && (
+                    <button
+                      onClick={handleFollow}
+                      className={`mt-6 w-full rounded-full px-5 py-3 text-sm font-semibold transition ${isFollowing ? "bg-slate-100 text-slate-900 border border-slate-200" : "bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white shadow-lg"}`}
                     >
-                      {post.authorName?.charAt(0).toUpperCase() || "S"}
+                      {isFollowing ? "Following" : "Follow"}
+                    </button>
+                  )}
+                </div>
+                <div className="rounded-[32px] bg-white border border-pink-100 shadow-xl p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                        Related
+                      </p>
+                      <h3 className="mt-3 text-2xl font-black text-slate-900">
+                        Related posts
+                      </h3>
+                    </div>
+                    <span className="text-sm text-slate-500">
+                      Same category
+                    </span>
+                  </div>
+                  <div className="mt-6 space-y-4">
+                    {relatedPosts.length > 0 ? (
+                      relatedPosts.map((item) => (
+                        <Link
+                          key={item.$id}
+                          to={`/post/${item.$id}`}
+                          className="block rounded-3xl border border-slate-100 bg-slate-50 p-5 transition hover:border-pink-200 hover:bg-white"
+                        >
+                          <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                            {item.category || "Story"}
+                          </p>
+                          <h4 className="mt-3 text-lg font-bold text-slate-900">
+                            {item.title}
+                          </h4>
+                          <p className="mt-2 text-sm text-slate-500 line-clamp-2">
+                            {excerpt(item.content)}
+                          </p>
+                        </Link>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-500">
+                        No related posts available yet.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </section>
+              <section className="rounded-[32px] bg-white border border-pink-100 shadow-xl p-6">
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                      Discussion
+                    </p>
+                    <h3 className="mt-2 text-2xl font-black text-slate-900">
+                      Comments
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {comments.length}{" "}
+                      {comments.length === 1 ? "Comment" : "Comments"}
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-pink-50 px-4 py-2 text-sm font-semibold text-pink-700">
+                    <MessageCircle className="h-4 w-4" /> Community
+                  </div>
+                </div>
+                <div className="rounded-[28px] bg-slate-50 p-5">
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={4}
+                    placeholder={
+                      userData
+                        ? "Write a comment..."
+                        : "Login to leave a comment."
+                    }
+                    disabled={!userData}
+                    className="w-full resize-none rounded-3xl border border-slate-200 bg-white p-4 text-slate-800 outline-none transition focus:border-pink-300 focus:ring-4 focus:ring-pink-100"
+                  />
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-slate-500">
+                      Share your thoughts and help the community.
+                    </p>
+                    <Button
+                      onClick={handleComment}
+                      disabled={!userData || !comment.trim()}
+                    >
+                      Post Comment
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-6 space-y-4">
+                  {comments.length > 0 ? (
+                    comments.map((item) => (
+                      <div
+                        key={item.$id}
+                        className="rounded-[28px] border border-slate-100 bg-white p-5 shadow-sm"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white font-bold text-lg">
+                            {item.authorName?.charAt(0).toUpperCase() || "S"}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div>
+                                <p className="font-semibold text-slate-900">
+                                  {item.authorName || "Anonymous"}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  {new Date(
+                                    item.createdAt,
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
+                                Reply
+                              </span>
+                            </div>
+                            <p className="mt-4 text-slate-700 leading-7">
+                              {item.comment}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-[28px] border border-dashed border-pink-200 bg-pink-50 p-10 text-center text-slate-600">
+                      No comments yet. Be the first to start the conversation.
                     </div>
                   )}
-
-                  {/* Verified */}
-                  <div
-                    className="
-          absolute
-          -bottom-1
-          -right-1
-          w-6
-          h-6
-          rounded-full
-          bg-blue-500
-          border-2
-          border-white
-          flex
-          items-center
-          justify-center
-          text-white
-          text-xs
-        "
-                  >
-                    ✓
+                </div>
+              </section>
+            </article>
+            <aside className="space-y-6">
+              <div className="sticky top-28 space-y-5">
+                <div className="rounded-[32px] bg-white border border-pink-100 shadow-xl p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                        Share
+                      </p>
+                      <h3 className="mt-2 text-xl font-bold text-slate-900">
+                        Spread the word
+                      </h3>
+                    </div>
+                    <Share2 className="h-6 w-6 text-pink-500" />
+                  </div>
+                  <div className="mt-5 grid gap-3">
+                    <a
+                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(post.title)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-pink-200 hover:bg-white"
+                    >
+                      <ExternalLink className="h-4 w-4 text-sky-500" /> Twitter
+                    </a>
+                    <a
+                      href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-pink-200 hover:bg-white"
+                    >
+                      <ExternalLink className="h-4 w-4 text-sky-700" /> LinkedIn
+                    </a>
+                    <a
+                      href={`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-pink-200 hover:bg-white"
+                    >
+                      <ExternalLink className="h-4 w-4 text-blue-600" />{" "}
+                      Facebook
+                    </a>
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + " " + pageUrl)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-pink-200 hover:bg-white"
+                    >
+                      <MessageSquare className="h-4 w-4 text-emerald-600" />{" "}
+                      WhatsApp
+                    </a>
+                    <button
+                      onClick={handleCopyLink}
+                      className="inline-flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-pink-200 hover:bg-white"
+                    >
+                      <Link2 className="h-4 w-4 text-slate-700" />{" "}
+                      {copied ? "Copied" : "Copy Link"}
+                    </button>
                   </div>
                 </div>
-
-                {/* Author Info */}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-gray-900">
-                      {post.authorName || "Scriptora"}
-                    </h3>
-
-                    <span className="text-blue-500 text-sm">✔</span>
+                <div className="rounded-[32px] bg-white border border-pink-100 shadow-xl p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                        Contents
+                      </p>
+                      <h3 className="mt-2 text-xl font-bold text-slate-900">
+                        On this page
+                      </h3>
+                    </div>
+                    <span className="text-sm text-slate-500">
+                      Smooth scroll
+                    </span>
                   </div>
-
-                  <p className="text-gray-500">
-                    Content Creator • Published on Scriptora
-                  </p>
+                  <div className="mt-5 space-y-2">
+                    {toc.length > 0 ? (
+                      toc.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => scrollToHeading(item.id)}
+                          className={`w-full text-left transition rounded-3xl px-4 py-3 text-sm ${item.level === 2 ? "font-semibold text-slate-900" : "text-slate-600"} hover:bg-pink-50`}
+                        >
+                          {item.text}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-500">
+                        The table of contents will appear after the article
+                        loads.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-[32px] bg-white border border-pink-100 shadow-xl p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                        Sidebar
+                      </p>
+                      <h3 className="mt-2 text-xl font-bold text-slate-900">
+                        Quick tools
+                      </h3>
+                    </div>
+                    <ArrowUp className="h-6 w-6 text-slate-600" />
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    <div className="rounded-3xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
+                      <span className="font-semibold">Reading progress:</span>{" "}
+                      {Math.max(0, Math.min(progress, 100))}%
+                    </div>
+                    <div className="rounded-3xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
+                      <span className="font-semibold">Bookmark:</span>{" "}
+                      {bookmarked ? "Saved" : "Tap to save"}
+                    </div>
+                    <div className="rounded-3xl bg-slate-50 px-4 py-4 text-sm text-slate-700">
+                      <span className="font-semibold">Live views:</span>{" "}
+                      {post.views ? post.views.toLocaleString() : "2.3K"}
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Right */}
-              {userData && post.userId !== userData.$id && (
-                <button
-                  onClick={handleFollow}
-                  className={`
-        px-7
-        py-3
-        rounded-full
-        font-semibold
-        transition-all
-        ${
-          isFollowing
-            ? "bg-gray-200 text-gray-700"
-            : "bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white hover:scale-105 shadow-lg"
-        }
-      `}
-                >
-                  {isFollowing ? "Following ✓" : "+ Follow"}
-                </button>
-              )}
-            </div>
-
-            {/* Social Stats */}
-            <div className="flex flex-wrap gap-4 mb-8">
-              {/* Followers */}
-              <div
-                className="
-      flex items-center gap-3
-      px-5 py-3
-      rounded-2xl
-      bg-white
-      border border-pink-100
-      shadow-sm
-    "
-              >
-                <div
-                  className="
-        w-11 h-11
-        rounded-full
-        bg-gradient-to-r
-        from-[#F58529]
-        via-[#DD2A7B]
-        to-[#8134AF]
-        flex items-center
-        justify-center
-        text-white
-      "
-                >
-                  👥
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">
-                    Followers
-                  </p>
-
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {followers}
-                  </h3>
-                </div>
-              </div>
-
-              {/* Following */}
-              <div
-                className="
-      flex items-center gap-3
-      px-5 py-3
-      rounded-2xl
-      bg-white
-      border border-pink-100
-      shadow-sm
-    "
-              >
-                <div
-                  className="
-        w-11 h-11
-        rounded-full
-        bg-gradient-to-r
-        from-[#F58529]
-        via-[#DD2A7B]
-        to-[#8134AF]
-        flex items-center
-        justify-center
-        text-white
-      "
-                >
-                  ❤️
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">
-                    Following
-                  </p>
-
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {following}
-                  </h3>
-                </div>
-              </div>
-            </div>
-
-            {/* Article Content */}
-            <div
-              className="
-    relative
-    rounded-[32px]
-    bg-white
-    border
-    border-gray-100
-    shadow-xl
-    p-6
-    sm:p-8
-    md:p-12
-    lg:p-16
-    overflow-hidden
-  "
+            </aside>
+          </div>
+          <div className="lg:hidden fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-slate-200 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-md">
+            <button
+              onClick={handleLike}
+              className="inline-flex items-center justify-center rounded-full bg-pink-500 p-3 text-white shadow-lg"
             >
-              {/* Decorative Glow */}
-              <div className="absolute -top-24 -right-24 w-72 h-72 bg-pink-100 rounded-full blur-3xl opacity-40"></div>
-              <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-purple-100 rounded-full blur-3xl opacity-40"></div>
-
-              {/* Reading Progress Line */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF]" />
-
-              <div
-                className="
-      relative
-      z-10
-
-      prose
-      prose-lg
-      lg:prose-xl
-      max-w-none
-
-      prose-headings:font-black
-      prose-headings:text-gray-900
-      prose-headings:tracking-tight
-
-      prose-p:text-gray-700
-      prose-p:leading-9
-      prose-p:text-[18px]
-
-      prose-a:text-[#DD2A7B]
-      prose-a:no-underline
-      hover:prose-a:underline
-
-      prose-strong:text-gray-900
-      prose-code:text-pink-600
-      prose-code:bg-pink-50
-      prose-code:px-1
-      prose-code:rounded
-
-      prose-blockquote:border-l-4
-      prose-blockquote:border-[#DD2A7B]
-      prose-blockquote:bg-pink-50
-      prose-blockquote:px-6
-      prose-blockquote:py-3
-      prose-blockquote:rounded-r-xl
-
-      prose-img:rounded-3xl
-      prose-img:shadow-xl
-
-      prose-ul:marker:text-[#DD2A7B]
-      prose-ol:marker:text-[#DD2A7B]
-    "
-              >
-                {parse(post.content)}
-              </div>
-            </div>
+              <Heart className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleBookmark}
+              className="inline-flex items-center justify-center rounded-full bg-slate-900 p-3 text-white shadow-lg"
+            >
+              {bookmarked ? (
+                <BookmarkCheck className="h-4 w-4" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
+            </button>
+            <button
+              onClick={handleCopyLink}
+              className="inline-flex items-center justify-center rounded-full bg-slate-100 p-3 text-slate-900"
+            >
+              <Link2 className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </Container>

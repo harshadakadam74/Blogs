@@ -1,12 +1,12 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 /* Utility: hide scrollbars while preserving scroll behavior */
 .hide-scrollbar {
-	-ms-overflow-style: none; /* IE and Edge */
-	scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 }
 .hide-scrollbar::-webkit-scrollbar {
-	display: none; /* Chrome, Safari, Opera */
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -49,4 +49,8 @@
     #059669
   );
   border-radius: 9999px;
+}
+
+html {
+  scroll-behavior: smooth;
 }

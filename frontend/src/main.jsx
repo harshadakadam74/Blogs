@@ -21,6 +21,7 @@ import AddPost from "./Pages/AddPost";
 import AllPosts from "./Pages/AllPosts";
 import EditPost from "./Pages/EditPost";
 import Post from "./Pages/Post";
+import AIStudio from "./Pages/AIStudio";
 import { AuthLayout } from "./Components";
 import Profile from "./Pages/Profile";
 import MyPosts from "./Pages/MyPosts";
@@ -126,6 +127,15 @@ const router = createBrowserRouter(
         element={
           <AuthLayout authentication={true}>
             <AddPost />
+          </AuthLayout>
+        }
+      />
+
+      <Route
+        path="ai-studio"
+        element={
+          <AuthLayout authentication={true}>
+            <AIStudio />
           </AuthLayout>
         }
       />

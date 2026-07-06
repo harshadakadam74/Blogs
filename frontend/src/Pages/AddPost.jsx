@@ -31,7 +31,7 @@ const AddPost = () => {
                 mt-6
                 text-4xl sm:text-5xl lg:text-6xl
                 font-black
-                bg-pink-700
+                bg-black
                 text-transparent bg-clip-text
                 tracking-tight
               "

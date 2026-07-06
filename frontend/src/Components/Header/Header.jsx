@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Container, Logo } from "../index";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Feather, Plus, Settings } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 
 function Header() {
   const authStatus = useSelector((state) => state.auth.status);
-  const userData = useSelector((state) => state.auth.userData);
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -73,6 +72,21 @@ transition
             {authStatus && (
               <>
                 <button
+                  onClick={() => navigate("/ai-studio")}
+                  className="
+    px-5
+    py-2
+    rounded-full
+    text-gray-700
+    font-semibold
+    hover:bg-gray-100
+    transition
+  "
+                >
+                  AI Studio
+                </button>
+
+                <button
                   onClick={() => navigate("/add-post")}
                   className="
     flex items-center gap-2
@@ -81,7 +95,7 @@ transition
     rounded-full
     text-white
     font-semibold
-    bg-gradient-to-r
+    bg-linear-to-r
     from-[#F58529]
     via-[#DD2A7B]
     to-[#8134AF]
@@ -139,7 +153,7 @@ transition
     rounded-full
     text-white
     font-semibold
-    bg-gradient-to-r
+    bg-linear-to-r
     from-[#F58529]
     via-[#DD2A7B]
     to-[#8134AF]
@@ -166,7 +180,7 @@ transition
     justify-center
     rounded-full
 
-    bg-gradient-to-r
+    bg-linear-to-r
     from-[#F58529]
     via-[#DD2A7B]
     to-[#8134AF]
@@ -299,6 +313,32 @@ transition
                   <li>
                     <button
                       onClick={() => {
+                        navigate("/ai-studio");
+                        setMenuOpen(false);
+                      }}
+                      className="
+                w-full
+                text-center
+                px-6
+                py-4
+                rounded-2xl
+                text-gray-700
+                font-semibold
+                bg-white
+                border
+                border-[#F3E7E2]
+                shadow-sm
+                hover:bg-[#FDF1EC]
+                hover:text-[#DD2A7B]
+                transition
+              "
+                    >
+                      AI Studio
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
                         navigate("/add-post");
                         setMenuOpen(false);
                       }}
@@ -310,7 +350,7 @@ transition
                 rounded-2xl
                 text-white
                 font-semibold
-                bg-gradient-to-r
+                bg-linear-to-r
                 from-[#F58529]
                 via-[#DD2A7B]
                 to-[#8134AF]
@@ -367,7 +407,7 @@ transition
                 rounded-2xl
                 text-white
                 font-semibold
-                bg-gradient-to-r
+                bg-linear-to-r
                 from-[#F58529]
                 via-[#DD2A7B]
                 to-[#8134AF]
