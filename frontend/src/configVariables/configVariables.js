@@ -14,8 +14,9 @@ const configVariables = {
     appwriteUsersCollectionId: String(import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID),
     usersCollectionId: String(import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID),
     appwriteUserSettingsCollectionId: String(import.meta.env.VITE_APPWRITE_USERSETTINGS_COLLECTION_ID),
-    appwriteOpenAIAPIKey: String(import.meta.env.VITE_APPWRITE_OPENAI_API_KEY)
-    
+    appwriteOpenAIAPIKey: String(import.meta.env.VITE_APPWRITE_OPENAI_API_KEY),
+    appwriteEndpoint: String(import.meta.env.VITE_APPWRITE_ENDPOINT)
+
     
 };
 
