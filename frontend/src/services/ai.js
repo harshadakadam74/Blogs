@@ -1,5 +1,7 @@
+const BASE_URL = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV ? 'http://localhost:8787' : '';
+
 export async function askAI({ prompt, content = "", title = "", selectedText = "" }) {
-  const response = await fetch("/api/ai/chat", {
+  const response = await fetch(`${BASE_URL}/api/ai/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,7 +23,7 @@ export async function askAI({ prompt, content = "", title = "", selectedText = "
 export function askAIStream({ prompt, content = "", title = "", selectedText = "", onMessage, onError, onDone }) {
   const controller = new AbortController();
 
-  fetch(`/api/ai/chat?stream=true`, {
+  fetch(`${BASE_URL}/api/ai/chat?stream=true`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ prompt, content, title, selectedText }),
