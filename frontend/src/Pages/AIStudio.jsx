@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../Components";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Bot, SendHorizonal, Sparkles, UserRound } from "lucide-react";
 import { askAIStream } from "../services/ai";
 
 const toolCards = [
@@ -132,53 +132,80 @@ const AIStudio = () => {
     { time: "10:20", action: "SEO improved" },
     { time: "10:32", action: "Summary added" },
   ]);
-  const [question, setQuestion] = useState("");
   const [draftContent] = useState("");
   const [selectedText] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [, setConversation] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      content:
+        "Hi! I can help you rewrite, summarize, brainstorm, and polish your writing in real time. Ask me anything.",
+    },
+  ]);
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [chatError, setChatError] = useState("");
+  const streamControllerRef = useRef(null);
+  const messageEndRef = useRef(null);
 
-  const handleAsk = async () => {
-    if (!question.trim()) return;
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
-    const userMessage = { role: "user", content: question };
-    setConversation((prev) => [...prev, userMessage]);
-    setIsLoading(true);
+  useEffect(() => () => {
+    streamControllerRef.current?.abort();
+  }, []);
+
+  const handleAsk = async (promptOverride) => {
+    const prompt = (promptOverride ?? inputValue).trim();
+    if (!prompt || isLoading) return;
+
+    const userMessage = { role: "user", content: prompt };
+    let assistantIndex = -1;
+
+    setMessages((prev) => {
+      const nextMessages = [...prev, userMessage, { role: "assistant", content: "" }];
+      assistantIndex = nextMessages.length - 1;
+      return nextMessages;
+    });
+    setInputValue("");
     setChatError("");
-    setAnswer("");
+    setIsLoading(true);
 
-    // Streamed response
-    let buffer = "";
-    askAIStream({
-      prompt: question,
+    streamControllerRef.current?.abort();
+
+    let streamedText = "";
+    const controller = askAIStream({
+      prompt,
       content: draftContent,
       title: "",
       selectedText,
       onMessage: (chunk) => {
-        // Append chunk to buffer and update UI incrementally
-        buffer += chunk;
-        setAnswer(buffer);
+        streamedText += chunk;
+        setMessages((prev) => {
+          const nextMessages = [...prev];
+          if (nextMessages[assistantIndex]) {
+            nextMessages[assistantIndex] = { ...nextMessages[assistantIndex], content: streamedText };
+          }
+          return nextMessages;
+        });
       },
       onError: (err) => {
         setChatError(err.message || "AI stream failed");
         setIsLoading(false);
       },
       onDone: () => {
-        setConversation((prev) => [...prev, { role: "assistant", content: buffer }]);// push final
         setIsLoading(false);
+        streamControllerRef.current = null;
       },
     });
 
-    // Optional: auto-cancel after a timeout (safety)
-    // setTimeout(() => controller.abort(), 120000);
+    streamControllerRef.current = controller;
   };
 
   return (
     <div className="relative min-h-screen bg-linear-to-br from-[#FCF0F7] via-white to-[#F8F5FF] py-10 px-4 lg:px-8">
-      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top_right,_rgba(251,207,232,0.35),transparent_40%)] pointer-events-none" />
-      <div className="max-w-[1600px] mx-auto">
+      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top_right,rgba(251,207,232,0.35),transparent_40%)] pointer-events-none" />
+      <div className="mx-auto max-w-400">
         <div className="mb-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[40px] border border-pink-100 bg-white/95 px-8 py-10 shadow-2xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -202,7 +229,7 @@ const AIStudio = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-8 overflow-hidden rounded-[32px] border border-slate-200 bg-slate-50 px-4 py-4 shadow-sm">
+            <div className="mt-8 overflow-hidden rounded-4xl border border-slate-200 bg-slate-50 px-4 py-4 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">★★★★☆</span>
@@ -234,6 +261,8 @@ const AIStudio = () => {
               {sidebarActions.map((item) => (
                 <button
                   key={item}
+                  type="button"
+                  onClick={() => handleAsk(item)}
                   className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-pink-300 hover:bg-white"
                 >
                   {item}
@@ -241,21 +270,47 @@ const AIStudio = () => {
               ))}
             </div>
             <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50 p-4">
-              <div className="text-sm text-slate-500">Ask anything...</div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Live chat</span>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                  {isLoading ? "Thinking..." : "Online"}
+                </span>
+              </div>
+              <div className="mt-3 flex h-72 flex-col gap-3 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                {messages.map((message, index) => (
+                  <div key={`${message.role}-${index}`} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`flex max-w-[85%] items-start gap-2 rounded-2xl px-4 py-3 ${message.role === "user" ? "bg-linear-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white" : "border border-slate-200 bg-slate-50 text-slate-700"}`}>
+                      <span className={`mt-0.5 ${message.role === "user" ? "text-white" : "text-pink-500"}`}>
+                        {message.role === "user" ? <UserRound className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                      </span>
+                      <p className="whitespace-pre-wrap text-sm leading-6">{message.content || (isLoading && index === messages.length - 1 ? "Thinking..." : "")}</p>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messageEndRef} />
+              </div>
+
               <div className="mt-3 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <input
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  type="text"
-                  placeholder="Improve this paragraph..."
-                  className="w-full border-none bg-transparent text-sm text-slate-900 outline-none"
+                <textarea
+                  value={inputValue}
+                  onChange={(event) => setInputValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
+                      handleAsk();
+                    }
+                  }}
+                  rows={2}
+                  placeholder="Ask for a rewrite, summary, title, or idea..."
+                  className="min-h-16 w-full resize-none border-none bg-transparent text-sm text-slate-900 outline-none"
                 />
                 <button
                   type="button"
-                  onClick={handleAsk}
-                  className="rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] px-4 py-2 text-sm font-semibold text-white"
+                  onClick={() => handleAsk()}
+                  disabled={isLoading || !inputValue.trim()}
+                  className="rounded-full bg-linear-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] p-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isLoading ? "..." : "➤"}
+                  <SendHorizonal className="h-4 w-4" />
                 </button>
               </div>
               {chatError ? <p className="mt-3 text-sm text-red-600">{chatError}</p> : null}
@@ -275,17 +330,18 @@ const AIStudio = () => {
                   Live suggestions while typing
                 </div>
               </div>
-              <div className="mt-8 rounded-[32px] border border-slate-200 bg-slate-50 p-6 text-sm leading-7 text-slate-700">
-                <p className="font-semibold text-slate-900">You asked</p>
-                <div className="mt-3 rounded-3xl bg-white p-4 text-slate-800 shadow-sm min-h-[80px]">
-                  {question || "Ask Scriptora AI a question to get started."}
+              <div className="mt-8 rounded-4xl border border-slate-200 bg-slate-50 p-6 text-sm leading-7 text-slate-700">
+                <div className="flex items-center gap-2 text-slate-900">
+                  <Sparkles className="h-4 w-4 text-pink-500" />
+                  <p className="font-semibold">Current prompt</p>
                 </div>
-                <p className="mt-6 font-semibold text-slate-900">AI Response</p>
-                <div className="mt-3 rounded-3xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm min-h-[120px]">
-                  {isLoading ? (
-                    <p className="text-slate-500">Loading response...</p>
-                  ) : answer ? (
-                    <p>{answer}</p>
+                <div className="mt-3 rounded-3xl bg-white p-4 text-slate-800 shadow-sm min-h-20">
+                  {inputValue || "Ask Scriptora AI a question to get started."}
+                </div>
+                <p className="mt-6 font-semibold text-slate-900">Latest response</p>
+                <div className="mt-3 rounded-3xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm min-h-30">
+                  {messages[messages.length - 1]?.content ? (
+                    <p>{messages[messages.length - 1].content}</p>
                   ) : (
                     <p className="text-slate-400">AI response will appear here once you ask a question.</p>
                   )}
@@ -293,17 +349,24 @@ const AIStudio = () => {
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={handleAsk}
+                    onClick={() => handleAsk(inputValue || "Improve this paragraph")}
                     disabled={isLoading}
-                    className="rounded-2xl bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    className="rounded-2xl bg-linear-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                   >
                     {isLoading ? "Working..." : "Ask again"}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setQuestion("");
-                      setAnswer("");
+                      setInputValue("");
+                      setMessages([
+                        {
+                          role: "assistant",
+                          content:
+                            "Hi! I can help you rewrite, summarize, brainstorm, and polish your writing in real time. Ask me anything.",
+                        },
+                      ]);
+                      setChatError("");
                     }}
                     className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
                   >
@@ -325,6 +388,7 @@ const AIStudio = () => {
                 {toolCards.slice(0, 6).map((tool) => (
                   <button
                     key={tool.title}
+                    type="button"
                     onClick={() => setActiveTool(tool.title)}
                     className="group rounded-[28px] border border-slate-200 bg-slate-50 p-6 text-left transition hover:-translate-y-1 hover:border-pink-200 hover:bg-white/95"
                   >
@@ -368,6 +432,7 @@ const AIStudio = () => {
                 {sidebarActions.map((action) => (
                   <button
                     key={action}
+                    type="button"
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:border-pink-200 hover:bg-white"
                   >
                     {action}
@@ -385,7 +450,7 @@ const AIStudio = () => {
               </div>
             </div>
 
-            <div className="rounded-[40px] border border-pink-100 bg-gradient-to-br from-[#FCE7F7] via-white to-[#F9F0FF] p-6 shadow-2xl">
+            <div className="rounded-[40px] border border-pink-100 bg-linear-to-br from-[#FCE7F7] via-white to-[#F9F0FF] p-6 shadow-2xl">
               <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">AI Timeline</p>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
                 {history.map((item) => (
@@ -415,6 +480,7 @@ const AIStudio = () => {
                 ].map((item) => (
                   <button
                     key={item}
+                    type="button"
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-pink-200 hover:bg-white"
                   >
                     {item}

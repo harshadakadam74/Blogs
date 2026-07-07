@@ -3,24 +3,27 @@ const http = require('http');
 const PORT = 8787;
 
 function streamResponse(res, text) {
-  // send as simple chunked data with small delays to simulate streaming
-  let i = 0;
   const parts = text.match(/.{1,40}/g) || [text];
   res.writeHead(200, {
-    'Content-Type': 'text/plain; charset=utf-8',
+    'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
   });
 
+  let i = 0;
   const interval = setInterval(() => {
     if (i >= parts.length) {
       clearInterval(interval);
       try { res.end(); } catch (e) {}
       return;
     }
-    try { res.write(parts[i]); } catch (e) {}
+
+    try {
+      const chunk = parts[i];
+      res.write(`data: ${chunk}\n\n`);
+    } catch (e) {}
     i += 1;
-  }, 150);
+  }, 120);
 }
 
 const server = http.createServer((req, res) => {
@@ -33,8 +36,7 @@ const server = http.createServer((req, res) => {
       const prompt = payload.prompt || 'Hello from mock AI';
 
       if (req.url.includes('stream=true')) {
-        // Simulate streaming chunks of text
-        const reply = `Simulated streaming answer for: ${prompt}\n\nThis is a streamed response from the local mock server. It arrives in parts to simulate real-time output.`;
+        const reply = `This is a real-time reply for: ${prompt}\n\nI can help you improve your writing, summarize content, suggest titles, and keep the conversation flowing like a modern chat assistant.`;
         streamResponse(res, reply);
       } else {
         const reply = { answer: `Mock reply: ${prompt}` };

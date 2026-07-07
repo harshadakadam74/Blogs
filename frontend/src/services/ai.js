@@ -17,9 +17,6 @@ export async function askAI({ prompt, content = "", title = "", selectedText = "
   return response.json();
 }
 
-// Streaming helper: calls server endpoint that streams partial responses.
-// onMessage receives raw text chunks (already decoded and cleaned).
-// Returns an AbortController that can be used to cancel the stream.
 export function askAIStream({ prompt, content = "", title = "", selectedText = "", onMessage, onError, onDone }) {
   const controller = new AbortController();
 
@@ -35,21 +32,37 @@ export function askAIStream({ prompt, content = "", title = "", selectedText = "
         throw new Error(text || "AI stream request failed");
       }
 
+      if (!res.body) {
+        throw new Error("Streaming response body is unavailable");
+      }
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
+      let buffer = "";
+
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
         if (value) {
           const chunk = decoder.decode(value, { stream: true });
-          // Some servers send SSE-style "data: ...\n\n" frames. Normalize by stripping leading "data: " prefixes.
-          const cleaned = chunk
-            .split(/\r?\n/)
-            .map((line) => line.replace(/^data:\s*/i, ""))
-            .join("\n");
-          if (onMessage) onMessage(cleaned);
+          buffer += chunk;
+
+          const lines = buffer.split(/\r?\n/);
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            const cleaned = line.replace(/^data:\s*/i, "").trim();
+            if (cleaned) {
+              if (onMessage) onMessage(cleaned);
+            }
+          }
         }
+      }
+
+      if (buffer.trim()) {
+        const cleaned = buffer.replace(/^data:\s*/i, "").trim();
+        if (cleaned && onMessage) onMessage(cleaned);
       }
 
       if (onDone) onDone();
