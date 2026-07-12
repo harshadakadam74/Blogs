@@ -1,82 +1,106 @@
 import { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import { Button } from "../Components";
-import { ArrowRight, Bot, SendHorizonal, Sparkles, UserRound } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  SendHorizonal,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 import { askAIStream } from "../services/ai";
 
 const toolCards = [
   {
     title: "Generate Title",
-    description: "Generate 10 SEO-friendly headline suggestions and apply the best one instantly.",
+    description:
+      "Generate 10 SEO-friendly headline suggestions and apply the best one instantly.",
     badge: "AI Writer",
   },
   {
     title: "Continue Writing",
-    description: "Continue from the current cursor position with context-aware copy.",
+    description:
+      "Continue from the current cursor position with context-aware copy.",
     badge: "Co-write",
   },
   {
     title: "Rewrite Content",
-    description: "Rewrite selected text in professional, casual, storytelling, or technical tone.",
+    description:
+      "Rewrite selected text in professional, casual, storytelling, or technical tone.",
     badge: "Rewrite",
   },
   {
     title: "Improve Grammar",
-    description: "Fix grammar, spelling, punctuation, flow, and readability in one pass.",
+    description:
+      "Fix grammar, spelling, punctuation, flow, and readability in one pass.",
     badge: "Clean-up",
   },
   {
     title: "Expand / Shorten",
-    description: "Expand content from 500 → 1500 words or condense long drafts into concise posts.",
+    description:
+      "Expand content from 500 → 1500 words or condense long drafts into concise posts.",
     badge: "Refine",
   },
   {
     title: "AI Summary",
-    description: "Generate TL;DR, 3-point summary, one-line summary, and key takeaways.",
+    description:
+      "Generate TL;DR, 3-point summary, one-line summary, and key takeaways.",
     badge: "Summary",
   },
   {
     title: "Smart Tags",
-    description: "Create tag strings from article topic input for better SEO and organization.",
+    description:
+      "Create tag strings from article topic input for better SEO and organization.",
     badge: "Tags",
   },
   {
     title: "SEO Assistant",
-    description: "Auto-generate SEO title, meta description, slug, OG title, keywords, and score.",
+    description:
+      "Auto-generate SEO title, meta description, slug, OG title, keywords, and score.",
     badge: "SEO",
   },
   {
     title: "AI Image Assistant",
-    description: "Generate cover prompt, thumbnail prompt, alt text and caption from your article.",
+    description:
+      "Generate cover prompt, thumbnail prompt, alt text and caption from your article.",
     badge: "Images",
   },
   {
     title: "Translation",
-    description: "Translate articles into English, Hindi, Marathi, Spanish, French, German, and Japanese.",
+    description:
+      "Translate articles into English, Hindi, Marathi, Spanish, French, German, and Japanese.",
     badge: "Translate",
   },
   {
     title: "Blog Idea Generator",
-    description: "Generate blog ideas, trending topics, series suggestions and beginner guides.",
+    description:
+      "Generate blog ideas, trending topics, series suggestions and beginner guides.",
     badge: "Ideas",
   },
   {
     title: "FAQ Generator",
-    description: "Automatically create FAQ questions and answers from your article.",
+    description:
+      "Automatically create FAQ questions and answers from your article.",
     badge: "FAQ",
   },
   {
     title: "Social & Marketing",
-    description: "Generate ready-to-post LinkedIn, X, Instagram, Facebook, newsletter, and YouTube copy.",
+    description:
+      "Generate ready-to-post LinkedIn, X, Instagram, Facebook, newsletter, and YouTube copy.",
     badge: "Social",
   },
   {
     title: "Readability Checker",
-    description: "Analyze reading level, passive voice, sentence length, paragraph size, and complexity.",
+    description:
+      "Analyze reading level, passive voice, sentence length, paragraph size, and complexity.",
     badge: "Readability",
   },
   {
     title: "Internal Link Suggestions",
-    description: "Scan posts and recommend related internal links for better SEO and engagement.",
+    description:
+      "Scan posts and recommend related internal links for better SEO and engagement.",
     badge: "Links",
   },
   {
@@ -86,17 +110,20 @@ const toolCards = [
   },
   {
     title: "Text-to-Speech",
-    description: "Convert articles into natural audio for listening and accessibility.",
+    description:
+      "Convert articles into natural audio for listening and accessibility.",
     badge: "Audio",
   },
   {
     title: "AI Chat Assistant",
-    description: "Ask AI to improve paragraphs, explain code, translate, summarize, or create examples.",
+    description:
+      "Ask AI to improve paragraphs, explain code, translate, summarize, or create examples.",
     badge: "Chat",
   },
   {
     title: "Publish Assistant",
-    description: "Run a publishing readiness check with grammar, SEO, tags, images, links, and score.",
+    description:
+      "Run a publishing readiness check with grammar, SEO, tags, images, links, and score.",
     badge: "Publish",
   },
 ];
@@ -113,13 +140,15 @@ const sidebarActions = [
 ];
 
 const AIStudio = () => {
+  const userData = useSelector((state) => state.auth?.userData);
+  const userName = userData?.name?.trim() || "User";
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTool, setActiveTool] = useState("Generate Title");
   const [seoScore] = useState(92);
   const [seoIssues] = useState([
-    "⚠ Missing Alt Text",
-    "⚠ No Internal Links",
-    "⚠ Keyword appears only once",
+    "Missing Alt Text",
+    "No Internal Links",
+    "Keyword appears only once",
   ]);
   const [readability] = useState({
     level: "Easy",
@@ -151,9 +180,12 @@ const AIStudio = () => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  useEffect(() => () => {
-    streamControllerRef.current?.abort();
-  }, []);
+  useEffect(
+    () => () => {
+      streamControllerRef.current?.abort();
+    },
+    [],
+  );
 
   const handleAsk = async (promptOverride) => {
     const prompt = (promptOverride ?? inputValue).trim();
@@ -163,7 +195,11 @@ const AIStudio = () => {
     let assistantIndex = -1;
 
     setMessages((prev) => {
-      const nextMessages = [...prev, userMessage, { role: "assistant", content: "" }];
+      const nextMessages = [
+        ...prev,
+        userMessage,
+        { role: "assistant", content: "" },
+      ];
       assistantIndex = nextMessages.length - 1;
       return nextMessages;
     });
@@ -184,7 +220,10 @@ const AIStudio = () => {
         setMessages((prev) => {
           const nextMessages = [...prev];
           if (nextMessages[assistantIndex]) {
-            nextMessages[assistantIndex] = { ...nextMessages[assistantIndex], content: streamedText };
+            nextMessages[assistantIndex] = {
+              ...nextMessages[assistantIndex],
+              content: streamedText,
+            };
           }
           return nextMessages;
         });
@@ -208,31 +247,115 @@ const AIStudio = () => {
       <div className="mx-auto max-w-400">
         <div className="mb-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[40px] border border-pink-100 bg-white/95 px-8 py-10 shadow-2xl">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-pink-600">Welcome back, Harshada 👋</p>
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+              {/* Left */}
+              <div className="flex-1">
+                <div className="inline-flex items-center gap-2 rounded-full bg-pink-100 px-4 py-2 text-sm font-semibold text-pink-600">
+                  <Sparkles size={16} />
+                  Welcome back, <span className="font-bold">{userName}</span>
+                </div>
+
+                <p className="mt-5 text-sm font-semibold text-pink-600"></p>
+
                 <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">
                   Scriptora AI Workspace
                 </h1>
-                <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
-                  Today’s writing goal: publish a strong blog post with better flow, SEO, and AI-powered polish.
+
+                <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+                  Write smarter with AI. Generate articles, improve grammar,
+                  optimize SEO, create summaries, translate content, and publish
+                  high-quality blogs—all from one intelligent workspace.
                 </p>
+
+                {/* AI Status */}
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700">
+                    GPT-5 Connected
+                  </div>
+
+                  <div className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
+                    AI Ready
+                  </div>
+
+                  <div className="rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-700">
+                    Smart SEO
+                  </div>
+                </div>
               </div>
-              <div className="rounded-3xl bg-slate-50 p-5 text-sm text-slate-700 shadow-sm">
-                <p className="font-semibold text-slate-900">Live SEO</p>
-                <p className="mt-2 text-2xl font-black text-slate-900">{seoScore}/100</p>
-                <p className="mt-2 text-sm text-slate-500">Title ✓ Meta ✓ Headings ✓</p>
-                <div className="mt-3 space-y-1 text-xs text-orange-500">
+
+              {/* Right Card */}
+
+              <div className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">
+                      AI Health Score
+                    </p>
+
+                    <h2 className="mt-1 text-4xl font-black text-slate-900">
+                      {seoScore}
+                      <span className="text-lg text-slate-400">/100</span>
+                    </h2>
+                  </div>
+
+                  <div className="rounded-2xl bg-purple-100 p-3">
+                    <Bot className="text-purple-600" size={28} />
+                  </div>
+                </div>
+
+                {/* Checklist */}
+
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle2 size={18} />
+                    SEO Title Optimized
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle2 size={18} />
+                    Meta Description Added
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle2 size={18} />
+                    Heading Structure Good
+                  </div>
+
                   {seoIssues.map((issue) => (
-                    <p key={issue}>{issue}</p>
+                    <div
+                      key={issue}
+                      className="flex items-center gap-2 text-sm text-orange-500"
+                    >
+                      <AlertTriangle size={18} />
+                      {issue}
+                    </div>
                   ))}
+                </div>
+
+                {/* Progress */}
+
+                <div className="mt-6">
+                  <div className="mb-2 flex justify-between text-xs text-slate-500">
+                    <span>Publishing Readiness</span>
+                    <span>{seoScore}%</span>
+                  </div>
+
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-linear-to-r from-pink-500 via-purple-500 to-indigo-500"
+                      style={{ width: `${seoScore}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
             <div className="mt-8 overflow-hidden rounded-4xl border border-slate-200 bg-slate-50 px-4 py-4 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">★★★★☆</span>
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">
+                    ★★★★☆
+                  </span>
                   <span>Reading Level • {readability.level}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
@@ -247,8 +370,12 @@ const AIStudio = () => {
           <div className="rounded-[40px] border border-pink-100 bg-white/95 px-6 py-8 shadow-2xl">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">AI Chat Panel</p>
-                <h2 className="mt-2 text-2xl font-black text-slate-900">Realtime assistant</h2>
+                <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                  AI Chat Panel
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-slate-900">
+                  Ai assistant
+                </h2>
               </div>
               <button
                 className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700"
@@ -278,12 +405,28 @@ const AIStudio = () => {
               </div>
               <div className="mt-3 flex h-72 flex-col gap-3 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                 {messages.map((message, index) => (
-                  <div key={`${message.role}-${index}`} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`flex max-w-[85%] items-start gap-2 rounded-2xl px-4 py-3 ${message.role === "user" ? "bg-linear-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white" : "border border-slate-200 bg-slate-50 text-slate-700"}`}>
-                      <span className={`mt-0.5 ${message.role === "user" ? "text-white" : "text-pink-500"}`}>
-                        {message.role === "user" ? <UserRound className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`flex max-w-[85%] items-start gap-2 rounded-2xl px-4 py-3 ${message.role === "user" ? "bg-linear-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white" : "border border-slate-200 bg-slate-50 text-slate-700"}`}
+                    >
+                      <span
+                        className={`mt-0.5 ${message.role === "user" ? "text-white" : "text-pink-500"}`}
+                      >
+                        {message.role === "user" ? (
+                          <UserRound className="h-4 w-4" />
+                        ) : (
+                          <Bot className="h-4 w-4" />
+                        )}
                       </span>
-                      <p className="whitespace-pre-wrap text-sm leading-6">{message.content || (isLoading && index === messages.length - 1 ? "Thinking..." : "")}</p>
+                      <p className="whitespace-pre-wrap text-sm leading-6">
+                        {message.content ||
+                          (isLoading && index === messages.length - 1
+                            ? "Thinking..."
+                            : "")}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -313,7 +456,9 @@ const AIStudio = () => {
                   <SendHorizonal className="h-4 w-4" />
                 </button>
               </div>
-              {chatError ? <p className="mt-3 text-sm text-red-600">{chatError}</p> : null}
+              {chatError ? (
+                <p className="mt-3 text-sm text-red-600">{chatError}</p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -323,8 +468,12 @@ const AIStudio = () => {
             <div className="rounded-[40px] border border-pink-100 bg-white/95 p-8 shadow-2xl">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">AI editor</p>
-                  <h2 className="mt-2 text-3xl font-black text-slate-900">Realtime AI suggestions</h2>
+                  <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                    AI editor
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black text-slate-900">
+                    Realtime AI suggestions
+                  </h2>
                 </div>
                 <div className="rounded-3xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
                   Live suggestions while typing
@@ -338,18 +487,24 @@ const AIStudio = () => {
                 <div className="mt-3 rounded-3xl bg-white p-4 text-slate-800 shadow-sm min-h-20">
                   {inputValue || "Ask Scriptora AI a question to get started."}
                 </div>
-                <p className="mt-6 font-semibold text-slate-900">Latest response</p>
+                <p className="mt-6 font-semibold text-slate-900">
+                  Latest response
+                </p>
                 <div className="mt-3 rounded-3xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm min-h-30">
                   {messages[messages.length - 1]?.content ? (
                     <p>{messages[messages.length - 1].content}</p>
                   ) : (
-                    <p className="text-slate-400">AI response will appear here once you ask a question.</p>
+                    <p className="text-slate-400">
+                      AI response will appear here once you ask a question.
+                    </p>
                   )}
                 </div>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={() => handleAsk(inputValue || "Improve this paragraph")}
+                    onClick={() =>
+                      handleAsk(inputValue || "Improve this paragraph")
+                    }
                     disabled={isLoading}
                     className="rounded-2xl bg-linear-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                   >
@@ -379,10 +534,16 @@ const AIStudio = () => {
             <div className="rounded-[40px] border border-pink-100 bg-white/95 p-8 shadow-2xl">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">AI Actions</p>
-                  <h2 className="mt-2 text-3xl font-black text-slate-900">One-click tools</h2>
+                  <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                    AI Actions
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black text-slate-900">
+                    One-click tools
+                  </h2>
                 </div>
-                <Button className="rounded-full px-6 py-3">Start with AI</Button>
+                <Button className="rounded-full px-6 py-3">
+                  Start with AI
+                </Button>
               </div>
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 {toolCards.slice(0, 6).map((tool) => (
@@ -394,19 +555,27 @@ const AIStudio = () => {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{tool.badge}</p>
-                        <h3 className="mt-3 text-lg font-semibold text-slate-900">{tool.title}</h3>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                          {tool.badge}
+                        </p>
+                        <h3 className="mt-3 text-lg font-semibold text-slate-900">
+                          {tool.title}
+                        </h3>
                       </div>
                       <span className="inline-flex h-10 w-10 items-center justify-center rounded-3xl bg-[#FDF2F8] text-[#BE185D] shadow-sm">
                         <ArrowRight className="h-4 w-4" />
                       </span>
                     </div>
-                    <p className="mt-4 text-sm leading-6 text-slate-600">{tool.description}</p>
+                    <p className="mt-4 text-sm leading-6 text-slate-600">
+                      {tool.description}
+                    </p>
                   </button>
                 ))}
               </div>
               <div className="mt-8 rounded-[28px] border border-slate-200 bg-slate-50 p-6">
-                <p className="text-sm font-semibold text-slate-900">Action preview</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  Action preview
+                </p>
                 <p className="mt-3 text-sm leading-7 text-slate-600">
                   {`Current action: ${activeTool}. Click any tool to see a preview of how it helps your draft.`}
                 </p>
@@ -415,11 +584,18 @@ const AIStudio = () => {
           </div>
 
           <aside className="space-y-6">
-            <div className={`rounded-[40px] border border-pink-100 bg-white/95 p-6 shadow-2xl ${sidebarOpen ? "block" : "hidden"}`}>
+            <div
+              className={`rounded-[40px] border border-pink-100 bg-white/95 p-6 shadow-2xl ${sidebarOpen ? "block" : "hidden"}`}
+            >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">🤖 Scriptora AI</p>
-                  <h3 className="mt-2 text-xl font-black text-slate-900">AI sidebar</h3>
+                  <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.24em] text-pink-500">
+                    <Bot size={18} className="text-pink-500" />
+                    <span>Scriptora AI</span>
+                  </p>
+                  <h3 className="mt-2 text-xl font-black text-slate-900">
+                    AI sidebar
+                  </h3>
                 </div>
                 <button
                   className="rounded-full bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700"
@@ -445,16 +621,23 @@ const AIStudio = () => {
                   <span className="text-emerald-600">Online</span>
                 </div>
                 <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3">
-                  <p className="text-sm text-slate-700">Ask AI: Improve this paragraph or generate a better title.</p>
+                  <p className="text-sm text-slate-700">
+                    Ask AI: Improve this paragraph or generate a better title.
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="rounded-[40px] border border-pink-100 bg-linear-to-br from-[#FCE7F7] via-white to-[#F9F0FF] p-6 shadow-2xl">
-              <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">AI Timeline</p>
+              <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                AI Timeline
+              </p>
               <ul className="mt-4 space-y-3 text-sm text-slate-600">
                 {history.map((item) => (
-                  <li key={item.time} className="flex items-center justify-between rounded-3xl bg-white p-4 shadow-sm">
+                  <li
+                    key={item.time}
+                    className="flex items-center justify-between rounded-3xl bg-white p-4 shadow-sm"
+                  >
                     <span>{item.action}</span>
                     <span className="text-slate-500">{item.time}</span>
                   </li>
@@ -463,7 +646,9 @@ const AIStudio = () => {
             </div>
 
             <div className="rounded-[40px] border border-pink-100 bg-white/95 p-6 shadow-2xl">
-              <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">Research</p>
+              <p className="text-sm uppercase tracking-[0.24em] text-pink-500 font-semibold">
+                Research
+              </p>
               <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <input
                   type="text"
@@ -472,20 +657,17 @@ const AIStudio = () => {
                 />
               </div>
               <div className="mt-4 grid gap-3">
-                {[
-                  "Summarize",
-                  "Key points",
-                  "References",
-                  "Citations",
-                ].map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-pink-200 hover:bg-white"
-                  >
-                    {item}
-                  </button>
-                ))}
+                {["Summarize", "Key points", "References", "Citations"].map(
+                  (item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-pink-200 hover:bg-white"
+                    >
+                      {item}
+                    </button>
+                  ),
+                )}
               </div>
             </div>
           </aside>

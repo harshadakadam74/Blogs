@@ -38,6 +38,7 @@ import AccountStats from "./Components/Settings/AccountStats";
 import ForgotPassword from "./Pages/ForgotPassword";
 import ChangePassword from "./Pages/ChangePassword";
 import EditProfile from "./Pages/EditProfile";
+import NotFound from "./Pages/NotFound";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -235,6 +236,8 @@ const router = createBrowserRouter(
         </AuthLayout>
       }
       />
+
+      <Route path="*" element={<NotFound />} />
 
     </Route>,
   ),

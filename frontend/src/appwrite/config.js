@@ -11,6 +11,10 @@ export class Service {
       .setEndpoint(configVariables.appwriteUrl)
       .setProject(configVariables.appwriteProjectId);
 
+    if (configVariables.appwriteApiKey) {
+      this.client.setKey(configVariables.appwriteApiKey);
+    }
+
     // Database service
     this.databases = new Databases(this.client);
 
@@ -26,6 +30,7 @@ export class Service {
     featuredImage,
     status,
     category,
+    type,
     userId,
     featured = false,
   }) {
@@ -40,6 +45,7 @@ export class Service {
           featuredImage,
           status,
           category,
+          type,
           userId,
           featured,
         },
@@ -52,7 +58,7 @@ export class Service {
   // Update Post
   async updatePost(
     slug,
-    { title, content, featuredImage, status, category, featured },
+    { title, content, featuredImage, status, category, type, featured },
   ) {
     try {
       return await this.databases.updateDocument(
@@ -65,6 +71,7 @@ export class Service {
           featuredImage,
           status,
           category,
+          type,
           featured,
         },
       );
