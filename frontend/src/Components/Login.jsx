@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login as authLogin } from "../store/authSlice";
-import { Button, Input, Logo } from "./index";
+import { login as authLogin } from "../Store/authSlice";
+import { Button, Input } from "./index";
 import { useDispatch } from "react-redux";
 import authService from "../appwrite/auth";
 import { useForm } from "react-hook-form";
@@ -27,7 +27,7 @@ function Login() {
         if (userData) {
           dispatch(authLogin(userData));
         }
-
+        
         navigate("/");
       }
     } catch (error) {
@@ -37,7 +37,7 @@ function Login() {
 
   return (
     <div
-  className="
+      className="
     min-h-screen
     flex
     items-center
@@ -49,9 +49,9 @@ function Login() {
     via-[#FFE8F0]
     to-[#F3E8FF]
   "
->
-     <div
-  className="
+    >
+      <div
+        className="
     relative
     w-full
     max-w-lg
@@ -68,43 +68,42 @@ function Login() {
     hover:-translate-y-1
     hover:shadow-[0_30px_80px_rgba(221,42,123,0.25)]
   "
->
-
-
-       {/* Heading */}
-<div className="text-center mb-6">
-  <h2
-    className="
+      >
+        {/* Heading */}
+        <div className="text-center mb-6">
+          <h2
+            className="
       text-4xl
       font-black
       tracking-tight
       text-gray-900
     "
-  >
-    Welcome Back
-  </h2>
+          >
+            Welcome Back
+          </h2>
 
-  <p
-    className="
+          <p
+            className="
       mt-2
       text-gray-500
       text-base
       leading-relaxed
     "
-  >
-    Sign in to continue sharing your stories with
-    <span className="font-semibold bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
-      {" "}Scriptora
-    </span>
-  </p>
-</div>
+          >
+            Sign in to continue sharing your stories with
+            <span className="font-semibold bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
+              {" "}
+              Scriptora
+            </span>
+          </p>
+        </div>
 
         {/* Signup Link */}
-<p className="mt-4 text-center text-sm text-gray-500">
-  Don't have an account?{" "}
-  <Link
-    to="/signup"
-    className="
+        <p className="mt-4 text-center text-sm text-gray-500">
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
+            className="
       font-bold
       bg-gradient-to-r
       from-[#F58529]
@@ -115,10 +114,10 @@ function Login() {
       hover:brightness-125
       transition-all
     "
-  >
-    Sign Up
-  </Link>
-</p>
+          >
+            Sign Up
+          </Link>
+        </p>
 
         {/* Error Message */}
         {error && (
@@ -152,8 +151,8 @@ function Login() {
             })}
           />
           <div className="flex items-center justify-between text-sm mt-2">
-  <label
-    className="
+            <label
+              className="
       flex
       items-center
       gap-2
@@ -161,25 +160,25 @@ function Login() {
       cursor-pointer
       select-none
     "
-  >
-    <input
-      type="checkbox"
-      className="
+            >
+              <input
+                type="checkbox"
+                className="
         w-4
         h-4
         rounded
         accent-[#DD2A7B]
         cursor-pointer
       "
-    />
-    <span className="hover:text-gray-800 transition-colors">
-      Remember me
-    </span>
-  </label>
+              />
+              <span className="hover:text-gray-800 transition-colors">
+                Remember me
+              </span>
+            </label>
 
-  <Link
-    to="/forgot-password"
-    className="
+            <Link
+              to="/forgot-password"
+              className="
       font-medium
       bg-gradient-to-r
       from-[#F58529]
@@ -191,15 +190,12 @@ function Login() {
       transition-all
       duration-300
     "
-  >
-    Forgot Password?
-  </Link>
-</div>
+            >
+              Forgot Password?
+            </Link>
+          </div>
 
-          <Button
-            type="submit"
-            className="w-full rounded-xl"
-          >
+          <Button type="submit" className="w-full rounded-xl">
             Sign In
           </Button>
           <div className="flex items-center my-2">

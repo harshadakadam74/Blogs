@@ -53,16 +53,15 @@ export function askAIStream({ prompt, content = "", title = "", selectedText = "
 
           for (const line of lines) {
             const cleaned = line.replace(/^data:\s*/i, "").trim();
-            if (cleaned) {
-              if (onMessage) onMessage(cleaned);
-            }
+            if (!cleaned || cleaned === "[DONE]") continue;
+            if (onMessage) onMessage(cleaned);
           }
         }
       }
 
       if (buffer.trim()) {
         const cleaned = buffer.replace(/^data:\s*/i, "").trim();
-        if (cleaned && onMessage) onMessage(cleaned);
+        if (cleaned && cleaned !== "[DONE]" && onMessage) onMessage(cleaned);
       }
 
       if (onDone) onDone();

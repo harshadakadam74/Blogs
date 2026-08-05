@@ -1,56 +1,84 @@
-const http = require('http');
+require("dotenv").config();
+
+const http = require("http");
+const OpenAI = require("openai");
 
 const PORT = 8787;
 
-function streamResponse(res, text) {
-  const parts = text.match(/.{1,40}/g) || [text];
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream; charset=utf-8',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+async function askGPT(prompt) {
+  const response = await client.responses.create({
+    model: "gpt-5",
+    input: prompt,
   });
 
-  let i = 0;
-  const interval = setInterval(() => {
-    if (i >= parts.length) {
-      clearInterval(interval);
-      try { res.end(); } catch (e) {}
-      return;
-    }
-
-    try {
-      const chunk = parts[i];
-      res.write(`data: ${chunk}\n\n`);
-    } catch (e) {}
-    i += 1;
-  }, 120);
+  return response.output_text;
 }
 
 const server = http.createServer((req, res) => {
-  if (req.method === 'POST' && req.url.startsWith('/api/ai/chat')) {
-    let body = '';
-    req.on('data', (chunk) => { body += chunk.toString(); });
-    req.on('end', () => {
-      let payload = {};
-      try { payload = JSON.parse(body || '{}'); } catch (e) { payload = {}; }
-      const prompt = payload.prompt || 'Hello from mock AI';
 
-      if (req.url.includes('stream=true')) {
-        const reply = `This is a real-time reply for: ${prompt}\n\nI can help you improve your writing, summarize content, suggest titles, and keep the conversation flowing like a modern chat assistant.`;
-        streamResponse(res, reply);
-      } else {
-        const reply = { answer: `Mock reply: ${prompt}` };
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(reply));
+  // CORS
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    return res.end();
+  }
+
+  if (
+    req.method === "POST" &&
+    req.url.startsWith("/api/ai/chat")
+  ) {
+
+    let body = "";
+
+    req.on("data", chunk => body += chunk);
+
+    req.on("end", async () => {
+
+      try {
+
+        const { prompt } = JSON.parse(body);
+
+        const answer = await askGPT(prompt);
+
+        res.writeHead(200, {
+          "Content-Type": "application/json"
+        });
+
+        res.end(JSON.stringify({
+          answer
+        }));
+
+      } catch (err) {
+
+        console.error(err);
+
+        res.writeHead(500, {
+          "Content-Type": "application/json"
+        });
+
+        res.end(JSON.stringify({
+          error: err.message
+        }));
+
       }
+
     });
+
     return;
   }
 
-  res.writeHead(404, { 'Content-Type': 'text/plain' });
-  res.end('Not found');
+  res.writeHead(404);
+  res.end();
+
 });
 
 server.listen(PORT, () => {
-  console.log(`Local AI mock server listening on http://localhost:${PORT}`);
+  console.log(`Running on http://localhost:${PORT}`);
 });

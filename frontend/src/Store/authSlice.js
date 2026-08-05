@@ -1,5 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const sanitizeUserData = (userData) => {
+    if (!userData || typeof userData !== "object") return userData;
+
+    const sanitized = {};
+
+    Object.keys(userData).forEach((key) => {
+        const value = userData[key];
+
+        if (typeof value === "function") return;
+        sanitized[key] = value;
+    });
+
+    return sanitized;
+};
+
 const initialState = {
     status: false,
     userData: null,
@@ -11,8 +26,9 @@ const authSlice = createSlice({
 
     reducers: {
         login: (state, action) => {
-            state.status = true;
-            state.userData = action.payload;
+            const userData = sanitizeUserData(action.payload);
+            state.status = !!userData;
+            state.userData = userData || null;
         },
 
         logout: (state) => {
