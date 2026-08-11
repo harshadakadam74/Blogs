@@ -8,8 +8,7 @@ import {
   PenSquare,
   Globe,
   Sparkles,
-  ArrowRight,
-  Rocket,
+  ArrowRight
 } from "lucide-react";
 
 const Home = () => {
