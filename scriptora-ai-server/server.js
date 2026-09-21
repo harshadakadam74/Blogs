@@ -20,5 +20,5 @@ const PORT = Number(process.env.PORT) || 8787;
 
 app.listen(PORT, () => {
   console.log(`Server Running on ${PORT}`);
-  console.log(`OpenAI key configured: ${Boolean(process.env.OPENAI_API_KEY)}`);
+  console.log(`Gemini key configured: ${Boolean(process.env.GEMINI_API_KEY)}`);
 });

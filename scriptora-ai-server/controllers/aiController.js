@@ -1,28 +1,48 @@
-import OpenAI from "openai";
+const apiKey = process.env.GEMINI_API_KEY;
+const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-const apiKey = process.env.OPENAI_API_KEY;
+function getRequestBody(userInput) {
+  return {
+    contents: [{ parts: [{ text: userInput }] }],
+  };
+}
 
-const client = apiKey ? new OpenAI({ apiKey }) : null;
+function getAnswer(data) {
+  return data?.candidates?.[0]?.content?.parts
+    ?.map((part) => part.text || "")
+    .join("") || "";
+}
+
+async function generateAnswer(userInput) {
+  const response = await fetch(`${endpoint}?key=${encodeURIComponent(apiKey)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(getRequestBody(userInput)),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data?.error?.message || "Gemini request failed");
+  }
+
+  return getAnswer(data);
+}
 
 export async function chat(req, res) {
   try {
     const { prompt = "", content = "", title = "", selectedText = "" } = req.body || {};
     const shouldStream = req.query.stream === "true";
 
-    if (!client) {
+    if (!apiKey) {
       return res.status(500).json({
-        error: "OpenAI API key is missing. Add OPENAI_API_KEY to scriptora-ai-server/.env",
+        error: "Gemini API key is missing. Add GEMINI_API_KEY to scriptora-ai-server/.env",
       });
     }
 
     const userInput = prompt || content || selectedText || title || "Help me continue writing.";
 
-    const response = await client.responses.create({
-      model: "gpt-5",
-      input: userInput,
-    });
-
-    const answer = response.output_text || "";
+    const answer = await generateAnswer(userInput);
 
     if (shouldStream) {
       res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
